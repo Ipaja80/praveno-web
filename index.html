@@ -1,0 +1,1796 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b3b6f">
+<meta name="description" content="Praveno Platform — secure, mobile-ready business project workflow app (PoC).">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Praveno">
+<title>Praveno Platform</title>
+<!--APP-START-->
+<title>Praveno Platform</title>
+<style>
+:root{
+  --bg:#f4f6fb; --surface:#ffffff; --surface-2:#f7f9fd; --ink:#1a2434; --muted:#5b6779;
+  --line:#e2e8f2; --brand:#0b3b6f; --brand-2:#1466c0; --accent:#12a37f;
+  --ns:#8a94a6; --ip:#1466c0; --bl:#c2410c; --rv:#7c3aed; --cp:#12a37f; --od:#d92d20;
+  --warn-bg:#fff7ed; --warn-line:#fdba74; --ok-bg:#ecfdf5; --ok-line:#6ee7b7; --info-bg:#eff6ff;
+  --shadow:0 1px 2px rgba(16,24,40,.06),0 8px 24px rgba(16,24,40,.06);
+  --radius:14px;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#0c1220;--surface:#141c2e;--surface-2:#0f1626;--ink:#e7ecf5;--muted:#9aa7bd;
+  --line:#243049;--brand:#3b82f6;--brand-2:#60a5fa;--warn-bg:#2a1f0e;--warn-line:#7c5514;
+  --ok-bg:#0e2a20;--ok-line:#1f6d52;--info-bg:#12233f;--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);}
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4,h5{margin:0 0 .5em;line-height:1.25}
+a{color:var(--brand-2);text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+.hidden{display:none !important}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:.5rem .85rem;
+  border-radius:10px;font-weight:600;font-size:.86rem;display:inline-flex;align-items:center;gap:.4rem;transition:.15s}
+.btn:hover{border-color:var(--brand-2)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.primary:hover{background:var(--brand-2)}
+.btn.danger{background:#fff0f0;border-color:#f7c5c5;color:#b42318}
+.btn.sm{padding:.3rem .55rem;font-size:.78rem;border-radius:8px}
+.btn.ghost{background:transparent;border-color:transparent}
+input,select,textarea{font-family:inherit;font-size:.9rem;color:var(--ink);background:var(--surface);
+  border:1px solid var(--line);border-radius:9px;padding:.5rem .6rem;width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--brand-2);outline-offset:-1px;border-color:var(--brand-2)}
+label{font-size:.78rem;font-weight:600;color:var(--muted);display:block;margin:0 0 .25rem}
+.field{margin-bottom:.75rem}
+.err{color:#d92d20;font-size:.75rem;margin-top:.25rem;min-height:1em}
+
+/* ---------- Login ---------- */
+#login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#0b3b6f,#12a37f);padding:1rem;z-index:50}
+.login-card{background:var(--surface);border-radius:18px;box-shadow:var(--shadow);width:min(420px,100%);padding:1.6rem}
+.login-logo{display:flex;align-items:center;gap:.6rem;margin-bottom:.4rem}
+.logo-badge{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,var(--brand),var(--accent));
+  color:#fff;display:grid;place-items:center;font-weight:800;font-size:1.1rem}
+.muted{color:var(--muted)}.small{font-size:.8rem}.tiny{font-size:.72rem}
+.pill{display:inline-flex;align-items:center;gap:.3rem;padding:.15rem .5rem;border-radius:999px;
+  font-size:.7rem;font-weight:700;border:1px solid var(--line);background:var(--surface-2)}
+
+/* ---------- App layout ---------- */
+#app{display:grid;grid-template-columns:246px 1fr;grid-template-rows:auto 1fr;
+  grid-template-areas:"side top" "side main";min-height:100vh}
+#side{grid-area:side;background:var(--surface);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.brand-row{display:flex;align-items:center;gap:.6rem;padding:1rem 1rem .8rem}
+.brand-row b{font-size:1rem}
+.nav{padding:.3rem .5rem;display:flex;flex-direction:column;gap:2px}
+.nav-h{font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:.7rem .7rem .25rem}
+.nav a{display:flex;align-items:center;gap:.6rem;padding:.5rem .7rem;border-radius:9px;color:var(--ink);
+  font-size:.86rem;font-weight:600;cursor:pointer;position:relative}
+.nav a:hover{background:var(--surface-2)}
+.nav a.active{background:var(--info-bg);color:var(--brand-2)}
+.nav a .ic{width:20px;text-align:center}
+.nav a .badge{margin-left:auto;background:var(--od);color:#fff;font-size:.62rem;font-weight:800;
+  border-radius:999px;padding:.05rem .4rem;min-width:18px;text-align:center}
+.nav a .badge.blue{background:var(--brand-2)}
+#top{grid-area:top;background:var(--surface);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;position:sticky;top:0;z-index:20}
+#top h2{margin:0;font-size:1.05rem}
+.top-sp{flex:1}
+.hamb{display:none}
+#main{grid-area:main;padding:1.1rem;max-width:1240px;width:100%}
+.who{display:flex;align-items:center;gap:.5rem;border:1px solid var(--line);border-radius:999px;padding:.2rem .3rem .2rem .6rem}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:.72rem;font-weight:700}
+.conn{display:inline-flex;align-items:center;gap:.35rem;font-size:.72rem;font-weight:700}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--cp)}
+.dot.off{background:var(--od)}
+
+/* ---------- Cards / grids ---------- */
+.grid{display:grid;gap:.9rem}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(155px,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card.pad{padding:1rem}
+.kpi{padding:.9rem 1rem}
+.kpi .l{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.kpi .v{font-size:1.7rem;font-weight:800;margin-top:.15rem}
+.kpi .s{font-size:.73rem;color:var(--muted);margin-top:.1rem}
+.row{display:flex;gap:.9rem;flex-wrap:wrap}
+.section-title{display:flex;align-items:center;gap:.5rem;margin:1.3rem 0 .6rem}
+.section-title h3{margin:0;font-size:1rem}
+.toolbar{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-bottom:.8rem}
+.toolbar .grow{flex:1;min-width:140px}
+.spacer{flex:1}
+
+/* status colors */
+.s-ns{--sc:var(--ns)}.s-ip{--sc:var(--ip)}.s-bl{--sc:var(--bl)}.s-rv{--sc:var(--rv)}.s-cp{--sc:var(--cp)}.s-od{--sc:var(--od)}
+.stag{display:inline-flex;align-items:center;gap:.35rem;font-size:.7rem;font-weight:800;color:var(--sc);
+  background:color-mix(in srgb,var(--sc) 12%,transparent);border:1px solid color-mix(in srgb,var(--sc) 35%,transparent);
+  padding:.12rem .5rem;border-radius:999px;white-space:nowrap}
+.stag::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--sc)}
+
+/* ---------- Kanban ---------- */
+.board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(250px,1fr);gap:.8rem;overflow-x:auto;padding-bottom:.5rem}
+.col{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;min-height:120px;display:flex;flex-direction:column}
+.col-h{padding:.6rem .7rem;font-size:.78rem;font-weight:800;display:flex;align-items:center;gap:.4rem;border-bottom:1px solid var(--line)}
+.col-h .cnt{margin-left:auto;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:0 .45rem;font-size:.7rem}
+.col-body{padding:.55rem;display:flex;flex-direction:column;gap:.5rem;min-height:60px;flex:1}
+.col.drag-over{outline:2px dashed var(--brand-2);outline-offset:-4px}
+.tcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:.6rem;cursor:grab;box-shadow:0 1px 2px rgba(16,24,40,.05)}
+.tcard:active{cursor:grabbing}
+.tcard .tt{font-weight:700;font-size:.84rem;margin-bottom:.3rem}
+.tcard .meta{display:flex;flex-wrap:wrap;gap:.3rem;align-items:center;font-size:.7rem;color:var(--muted)}
+.tcard.late{border-left:3px solid var(--od)}
+.mini-av{width:20px;height:20px;border-radius:50%;background:var(--brand-2);color:#fff;display:grid;place-items:center;font-size:.6rem;font-weight:700}
+.prog{height:6px;border-radius:999px;background:var(--line);overflow:hidden;margin-top:.4rem}
+.prog>i{display:block;height:100%;background:var(--accent)}
+
+/* ---------- Tables ---------- */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:.82rem;background:var(--surface)}
+thead th{background:var(--surface-2);text-align:left;padding:.55rem .6rem;font-size:.72rem;text-transform:uppercase;
+  letter-spacing:.03em;color:var(--muted);border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0}
+tbody td{padding:.5rem .6rem;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:hover{background:var(--surface-2)}
+tbody tr:last-child td{border-bottom:none}
+.rt{text-align:right}.ct{text-align:center}.nowrap{white-space:nowrap}
+
+/* governance content styling (injected fragments) */
+.gov-body h3{font-size:1.15rem;color:var(--brand-2);margin-top:0}
+.gov-body h4{font-size:.98rem;margin-top:1.3rem;border-left:3px solid var(--brand-2);padding-left:.5rem}
+.gov-body h5{font-size:.85rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:1rem}
+.gov-body table{margin:.6rem 0;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.gov-body td,.gov-body th{border:1px solid var(--line)}
+.gov-body pre{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:.8rem;overflow-x:auto;font-size:.78rem}
+.gov-body code{font-family:"SF Mono",Consolas,Menlo,monospace;font-size:.82em}
+.gov-body pre code{white-space:pre}
+.callout{background:var(--info-bg);border:1px solid var(--line);border-left:4px solid var(--brand-2);
+  border-radius:8px;padding:.7rem .85rem;margin:.7rem 0;font-size:.86rem}
+.callout.warn{background:var(--warn-bg);border-left-color:var(--warn-line)}
+.callout.ok{background:var(--ok-bg);border-left-color:var(--accent)}
+.subnav{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem}
+.subnav button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:.4rem .8rem;
+  font-size:.8rem;font-weight:700;color:var(--muted)}
+.subnav button.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(9,16,30,.55);display:flex;align-items:flex-start;
+  justify-content:center;padding:2rem 1rem;z-index:60;overflow-y:auto}
+.modal{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);width:min(560px,100%);padding:1.2rem}
+.modal h3{margin-top:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.toast-wrap{position:fixed;right:1rem;bottom:1rem;display:flex;flex-direction:column;gap:.5rem;z-index:80}
+.toast{background:var(--ink);color:#fff;padding:.6rem .9rem;border-radius:10px;font-size:.82rem;box-shadow:var(--shadow);max-width:320px}
+.toast.ok{background:#0f766e}.toast.err{background:#b42318}
+
+/* bottom nav (mobile) */
+#botnav{display:none}
+.empty{padding:2rem;text-align:center;color:var(--muted);font-size:.9rem}
+.chip{display:inline-block;font-size:.68rem;font-weight:700;padding:.1rem .45rem;border-radius:6px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted)}
+.raci-R{color:#b42318;font-weight:800}.raci-A{color:#12a37f;font-weight:800}.raci-C{color:#1466c0;font-weight:800}.raci-I{color:#7c3aed;font-weight:800}
+.bars{display:flex;flex-direction:column;gap:.45rem}
+.bar-row{display:grid;grid-template-columns:130px 1fr 40px;align-items:center;gap:.5rem;font-size:.78rem}
+.bar{height:12px;border-radius:999px;background:var(--line);overflow:hidden}
+.bar>i{display:block;height:100%}
+.donut{--v:0}
+.flow-svg{width:100%;height:auto;max-width:940px}
+.legend{display:flex;gap:.8rem;flex-wrap:wrap;font-size:.74rem;color:var(--muted);margin-top:.5rem}
+.legend span{display:inline-flex;align-items:center;gap:.3rem}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+@media (max-width:860px){
+  #app{grid-template-columns:1fr;grid-template-areas:"top" "main"}
+  #side{position:fixed;left:0;top:0;bottom:0;z-index:40;transform:translateX(-100%);transition:.22s;width:250px;height:100vh}
+  #side.open{transform:none;box-shadow:var(--shadow)}
+  .hamb{display:inline-flex}
+  #main{padding:.8rem;padding-bottom:5rem}
+  .two{grid-template-columns:1fr}
+  #botnav{display:flex;position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);
+    justify-content:space-around;padding:.35rem .2rem;z-index:30;padding-bottom:calc(.35rem + env(safe-area-inset-bottom))}
+  #botnav a{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.6rem;font-weight:700;color:var(--muted);padding:.2rem .4rem;border-radius:8px}
+  #botnav a.active{color:var(--brand-2)}
+  .bar-row{grid-template-columns:100px 1fr 34px}
+}
+.scrim{display:none}
+@media (max-width:860px){.scrim.show{display:block;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:35}}
+</style>
+
+<!-- ==================== LOGIN ==================== -->
+<div id="login">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-badge">P</div>
+      <div><b style="font-size:1.05rem">Praveno Platform</b><div class="small muted">Secure business project workflows</div></div>
+    </div>
+    <p class="small muted" style="margin:.3rem 0 1rem">Proof-of-concept sign-in. Choose a role to explore how role-based access changes what you can do. No real credentials are stored.</p>
+    <div class="field"><label>Work email</label><input id="li-email" type="email" value="goke_t@outlook.com" autocomplete="username"></div>
+    <div class="field"><label>Password</label><input id="li-pass" type="password" value="demo-passphrase" autocomplete="current-password"><div class="err" id="li-err"></div></div>
+    <div class="field"><label>Sign in as (role)</label>
+      <select id="li-role">
+        <option value="Owner">Owner — full control</option>
+        <option value="Manager" selected>Manager — create/edit/approve</option>
+        <option value="Member">Member — edit assigned work</option>
+        <option value="Approver">Approver — approvals only</option>
+        <option value="Viewer">Viewer — read only</option>
+      </select>
+    </div>
+    <label style="display:flex;align-items:center;gap:.5rem;font-weight:600;margin:.4rem 0 .9rem">
+      <input type="checkbox" id="li-mfa" checked style="width:auto"> Simulate MFA (one-time code step)
+    </label>
+    <button class="btn primary" id="li-btn" style="width:100%;justify-content:center">Sign in securely →</button>
+    <div class="small muted" style="margin-top:.9rem;display:flex;gap:.4rem;flex-wrap:wrap">
+      <span class="pill">🔒 TLS 1.2+</span><span class="pill">🔑 MFA-ready</span><span class="pill">⏱️ 15-min session</span><span class="pill">📜 Audit-logged</span>
+    </div>
+    <div class="tiny muted" id="ios-hint" style="display:none;margin-top:.7rem;padding:.5rem .6rem;background:var(--info-bg);border-radius:8px">📱 <b>iPhone/iPad:</b> tap Safari's <b>Share</b> button → <b>Add to Home Screen</b> to install Praveno as an app.</div>
+  </div>
+</div>
+
+<!-- ==================== APP ==================== -->
+<div id="app" class="hidden">
+  <div class="scrim" id="scrim" onclick="toggleSide(false)"></div>
+  <aside id="side">
+    <div class="brand-row"><div class="logo-badge">P</div><div><b>Praveno</b><div class="tiny muted" id="org-name">Praveno Business Solutions</div></div></div>
+    <nav class="nav" id="nav"></nav>
+    <div style="margin-top:auto;padding:.8rem"><button class="btn sm" style="width:100%;justify-content:center" onclick="logout()">↩︎ Sign out</button>
+      <div class="tiny muted" style="text-align:center;margin-top:.5rem">v2.0 PoC · NIST/OWASP aligned</div></div>
+  </aside>
+
+  <header id="top">
+    <button class="btn ghost hamb" onclick="toggleSide()">☰</button>
+    <h2 id="view-title">Dashboard</h2>
+    <div class="top-sp"></div>
+    <span class="conn" id="conn"><span class="dot" id="conn-dot"></span><span id="conn-txt">Online</span></span>
+    <div class="who"><span class="avatar" id="me-av">P</span><span class="small" style="font-weight:700"><span id="me-name">You</span><br><span class="tiny muted" id="me-role">Manager</span></span></div>
+  </header>
+
+  <main id="main"></main>
+
+  <nav id="botnav"></nav>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+<div id="modal-root"></div>
+
+<!-- governance panes are injected here (kept out of <script> to avoid escaping issues) -->
+<div id="gov-store" class="hidden">
+<!--__GOV_ARCHITECTURE__--><section class="gov-pane gov-body" data-gov="gov-architecture"><h3>Architecture & Data Model</h3>
+<p>This pillar defines the logical architecture, relational data model, multi-tenancy and RBAC enforcement, API surface, Redis and object-storage flows, and a capacity-sized deployment topology for the <strong>Praveno Platform</strong>. All designs are tenant-scoped by <code>organization_id</code>, defense-in-depth aligned to <strong>NIST SP 800-53 Rev 5</strong> control families (notably AC, AU, SC, SI, CM), and traceable to the <strong>NIST SP 800-37 Rev 2</strong> RMF steps (Prepare, Categorize, Select, Implement, Assess, Authorize, Monitor). Per <strong>FIPS 199</strong> the system is provisionally categorized <em>Moderate</em> (Confidentiality=Moderate, Integrity=Moderate, Availability=Moderate) given business program data and PII fields; the high-water mark drives control selection.</p>
+
+<h4>1. Logical Architecture Overview</h4>
+<p>Five tiers, each independently scalable and observable. The design is stateless at the application tier so any request can hit any node (session/state externalized to Redis and PostgreSQL), which is what makes horizontal autoscaling and blue/green deploys safe.</p>
+<table>
+<thead><tr><th>Tier</th><th>Components</th><th>Responsibility</th><th>Key controls (800-53 Rev 5)</th></tr></thead>
+<tbody>
+<tr><td>Client</td><td>PWA (Web), Android app, iOS app; shared TypeScript API client; service worker + IndexedDB for offline/low-connectivity queueing and conflict-resolved sync</td><td>Presentation, optimistic offline mutations, background sync, push registration</td><td>SC-8 (TLS in transit), IA-2 (auth), AC-11 (session lock); MASVS-STORAGE / MASVS-CRYPTO on device</td></tr>
+<tr><td>Edge</td><td>CDN (static PWA assets, signed-URL passthrough), WAF (OWASP CRS ruleset), global L7 load balancer, TLS 1.3 termination, DDoS/rate-limit shield</td><td>Caching, threat filtering, TLS, geo-routing, request throttling</td><td>SC-5 (DoS protection), SC-7 (boundary protection), SI-3/SI-4 (malicious code / monitoring)</td></tr>
+<tr><td>Application</td><td>Stateless API nodes serving REST + GraphQL + webhook dispatch; behind LB; JWT/OIDC validation; per-request tenant context set for RLS</td><td>Business logic, authZ, validation, orchestration</td><td>AC-3/AC-4 (access & flow enforcement), AC-6 (least privilege), SI-10 (input validation), AU-2 (event logging)</td></tr>
+<tr><td>Data</td><td>PostgreSQL primary (writes) + read replicas (reads/reports); Redis cluster; S3-compatible object storage</td><td>Durable relational store, cache/queue, blob storage</td><td>SC-28 (encryption at rest), SC-8, MP-6, CP-9 (backup), AU-9 (audit log protection)</td></tr>
+<tr><td>Async / Observability</td><td>Worker fleet consuming Redis queues (notifications, AV scan, exports, recurrence, webhook delivery); metrics/traces/logs pipeline; alerting</td><td>Background jobs, fan-out, telemetry, SLO alerting</td><td>AU-6 (log review), SI-4 (monitoring), IR-4/IR-5 (incident handling/monitoring), CA-7 (continuous monitoring — RMF Monitor step)</td></tr>
+</tbody>
+</table>
+<div class="callout"><strong>Request path:</strong> Client → CDN/WAF → LB → stateless API node → (Redis cache hit? return) else PostgreSQL primary/replica → response. Writes that trigger side effects (email, push, webhook, AV scan) enqueue a Redis job rather than blocking the request, keeping p95 API latency low and decoupling integration failures from user-facing calls.</p></div>
+
+<h4>2. PostgreSQL Schema — Core Entities</h4>
+<p>Every tenant-owned table carries <code>organization_id uuid NOT NULL</code> as the first-class isolation key and participates in Row-Level Security (Section 3). Primary keys are UUID v7 (time-ordered) for index locality without exposing sequential counts. Timestamps are <code>timestamptz</code>. Soft-delete uses <code>deleted_at timestamptz NULL</code>. Below is the entity table; the most load-bearing DDL follows.</p>
+<table>
+<thead><tr><th>Table</th><th>Purpose</th><th>PK</th><th>Key FKs</th><th>Important indexes</th></tr></thead>
+<tbody>
+<tr><td><code>organizations</code></td><td>Tenant root</td><td><code>id</code></td><td>—</td><td>unique <code>(slug)</code>; <code>(plan_tier)</code></td></tr>
+<tr><td><code>users</code></td><td>Global identity (may belong to many orgs)</td><td><code>id</code></td><td>—</td><td>unique <code>(lower(email))</code>; <code>(status)</code></td></tr>
+<tr><td><code>memberships</code></td><td>User↔org join + role</td><td><code>id</code></td><td><code>organization_id</code>, <code>user_id</code></td><td>unique <code>(organization_id,user_id)</code>; <code>(organization_id,role)</code></td></tr>
+<tr><td><code>projects</code></td><td>Workflow instance / program</td><td><code>id</code></td><td><code>organization_id</code>, <code>template_id</code>, <code>created_by</code></td><td><code>(organization_id,status)</code>; <code>(organization_id,due_date)</code></td></tr>
+<tr><td><code>tasks</code></td><td>Stage/work item</td><td><code>id</code></td><td><code>organization_id</code>, <code>project_id</code>, <code>workflow_state_id</code>, <code>assignee_id</code></td><td><code>(organization_id,project_id)</code>; <code>(organization_id,assignee_id,due_date)</code>; GIN <code>(search_tsv)</code></td></tr>
+<tr><td><code>workflow_states</code></td><td>Named stages per template/project (e.g., Intake→Review→Approved→Done)</td><td><code>id</code></td><td><code>organization_id</code>, <code>template_id</code></td><td><code>(organization_id,template_id,position)</code></td></tr>
+<tr><td><code>task_dependencies</code></td><td>DAG edges (finish-to-start etc.)</td><td><code>id</code></td><td><code>organization_id</code>, <code>predecessor_id</code>, <code>successor_id</code></td><td>unique <code>(predecessor_id,successor_id)</code>; <code>(organization_id,successor_id)</code></td></tr>
+<tr><td><code>checklists</code></td><td>Sub-items on a task</td><td><code>id</code></td><td><code>organization_id</code>, <code>task_id</code></td><td><code>(organization_id,task_id,position)</code></td></tr>
+<tr><td><code>approvals</code></td><td>Approval request header (routing)</td><td><code>id</code></td><td><code>organization_id</code>, <code>project_id</code>, <code>task_id</code>, <code>requested_by</code></td><td><code>(organization_id,status)</code>; <code>(organization_id,task_id)</code></td></tr>
+<tr><td><code>approval_steps</code></td><td>Ordered approver stages (serial/parallel)</td><td><code>id</code></td><td><code>organization_id</code>, <code>approval_id</code>, <code>approver_id</code></td><td><code>(approval_id,position)</code>; <code>(organization_id,approver_id,decision)</code></td></tr>
+<tr><td><code>comments</code></td><td>Threaded discussion + @mentions</td><td><code>id</code></td><td><code>organization_id</code>, <code>parent_id</code>, <code>author_id</code>, polymorphic <code>(entity_type,entity_id)</code></td><td><code>(organization_id,entity_type,entity_id,created_at)</code></td></tr>
+<tr><td><code>attachments</code></td><td>File metadata (blob lives in S3)</td><td><code>id</code></td><td><code>organization_id</code>, <code>uploaded_by</code>, polymorphic entity</td><td><code>(organization_id,entity_type,entity_id)</code>; <code>(scan_status)</code></td></tr>
+<tr><td><code>audit_logs</code></td><td>Immutable append-only audit trail (AU-2/AU-3)</td><td><code>(id,occurred_at)</code></td><td><code>organization_id</code>, <code>actor_id</code></td><td>partitioned monthly by <code>occurred_at</code>; <code>(organization_id,occurred_at)</code>; <code>(organization_id,entity_type,entity_id)</code></td></tr>
+<tr><td><code>notifications</code></td><td>Per-user notification inbox + delivery state</td><td><code>(id,created_at)</code></td><td><code>organization_id</code>, <code>user_id</code></td><td>partitioned monthly by <code>created_at</code>; <code>(organization_id,user_id,read_at)</code></td></tr>
+<tr><td><code>raci_assignments</code></td><td>R/A/C/I role per user per entity</td><td><code>id</code></td><td><code>organization_id</code>, <code>user_id</code>, polymorphic entity</td><td>unique <code>(organization_id,entity_type,entity_id,user_id,raci_role)</code></td></tr>
+<tr><td><code>templates</code></td><td>Reusable workflow blueprint</td><td><code>id</code></td><td><code>organization_id</code>, <code>created_by</code></td><td><code>(organization_id,is_published)</code></td></tr>
+<tr><td><code>template_tasks</code></td><td>Task blueprints inside a template</td><td><code>id</code></td><td><code>organization_id</code>, <code>template_id</code></td><td><code>(template_id,position)</code></td></tr>
+<tr><td><code>milestones</code></td><td>Dated goals within a project</td><td><code>id</code></td><td><code>organization_id</code>, <code>project_id</code></td><td><code>(organization_id,project_id,target_date)</code></td></tr>
+<tr><td><code>saved_reports</code></td><td>Stored report/dashboard definitions + schedule</td><td><code>id</code></td><td><code>organization_id</code>, <code>owner_id</code></td><td><code>(organization_id,owner_id)</code>; <code>(next_run_at)</code></td></tr>
+</tbody>
+</table>
+
+<h5>Load-bearing DDL — tenant scoping + partitioning</h5>
+<pre><code>-- Requires: CREATE EXTENSION IF NOT EXISTS pgcrypto;  (uuid via gen_random_uuid or app-side uuid v7)
+
+CREATE TABLE organizations (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug         citext NOT NULL UNIQUE,
+  name         text   NOT NULL,
+  plan_tier    text   NOT NULL DEFAULT 'standard'
+                 CHECK (plan_tier IN ('free','standard','business','enterprise')),
+  data_region  text   NOT NULL DEFAULT 'us',
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  deleted_at   timestamptz
+);
+
+CREATE TABLE tasks (
+  id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id   uuid NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  project_id        uuid NOT NULL REFERENCES projects(id)      ON DELETE CASCADE,
+  workflow_state_id uuid NOT NULL REFERENCES workflow_states(id),
+  assignee_id       uuid REFERENCES users(id),
+  title             text NOT NULL,
+  description       text,
+  priority          smallint NOT NULL DEFAULT 3 CHECK (priority BETWEEN 1 AND 5),
+  due_date          date,
+  position          integer NOT NULL DEFAULT 0,
+  search_tsv        tsvector GENERATED ALWAYS AS
+                      (to_tsvector('english', coalesce(title,'') || ' ' || coalesce(description,''))) STORED,
+  created_by        uuid NOT NULL REFERENCES users(id),
+  created_at        timestamptz NOT NULL DEFAULT now(),
+  updated_at        timestamptz NOT NULL DEFAULT now(),
+  deleted_at        timestamptz
+);
+-- Tenant-leading composite indexes: every query filters organization_id first.
+CREATE INDEX ix_tasks_org_project  ON tasks (organization_id, project_id) WHERE deleted_at IS NULL;
+CREATE INDEX ix_tasks_org_assignee ON tasks (organization_id, assignee_id, due_date) WHERE deleted_at IS NULL;
+CREATE INDEX ix_tasks_search       ON tasks USING gin (search_tsv);</code></pre>
+
+<pre><code>-- audit_logs: append-only, RANGE-partitioned by month for AU-2/AU-3/AU-11 retention & pruning.
+CREATE TABLE audit_logs (
+  id              uuid        NOT NULL DEFAULT gen_random_uuid(),
+  organization_id uuid        NOT NULL,
+  actor_id        uuid,                         -- null = system actor
+  action          text        NOT NULL,         -- e.g. 'task.updated'
+  entity_type     text        NOT NULL,
+  entity_id       uuid        NOT NULL,
+  diff            jsonb,                         -- before/after delta
+  ip_address      inet,
+  user_agent      text,
+  occurred_at     timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (id, occurred_at)
+) PARTITION BY RANGE (occurred_at);
+
+CREATE TABLE audit_logs_2026_07 PARTITION OF audit_logs
+  FOR VALUES FROM ('2026-07-01') TO ('2026-08-01');
+CREATE INDEX ix_audit_2026_07_org_time ON audit_logs_2026_07 (organization_id, occurred_at DESC);
+-- notifications uses the identical monthly RANGE pattern on created_at.
+-- New partitions are precreated by a scheduled worker (pg_partman-style); old partitions
+-- are DETACHed and archived to object storage per the retention policy (AU-11).</code></pre>
+<div class="callout ok"><strong>Why monthly partitions for <code>audit_logs</code> / <code>notifications</code>:</strong> these are the highest-cardinality, append-heavy tables. RANGE partitioning by time keeps working-set indexes small, makes retention pruning a metadata-only <code>DETACH PARTITION</code> (no giant <code>DELETE</code>), and lets read replicas serve historical reporting without contending with hot inserts.</div>
+
+<h4>3. Multi-Tenancy & RBAC</h4>
+<p>Isolation is <strong>defense-in-depth</strong>: (a) application layer sets tenant context on every connection, and (b) PostgreSQL <strong>Row-Level Security (RLS)</strong> enforces it in the database so a query bug cannot leak cross-tenant rows. This directly implements AC-3 (access enforcement), AC-4 (information flow enforcement), and SC-4 (information in shared resources).</p>
+<pre><code>-- The API sets these per request/transaction after authenticating & authorizing:
+--   SET LOCAL app.current_org  = '<organization_id>';
+--   SET LOCAL app.current_role = '<member_role>';
+
+ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tasks FORCE ROW LEVEL SECURITY;   -- applies even to table owner
+
+-- Tenant isolation: rows are only visible within the caller's org.
+CREATE POLICY tenant_isolation ON tasks
+  USING (organization_id = current_setting('app.current_org')::uuid);
+
+-- Write guard: viewers cannot mutate; inserts must carry the caller's org.
+CREATE POLICY tenant_write ON tasks
+  FOR ALL
+  USING  (organization_id = current_setting('app.current_org')::uuid)
+  WITH CHECK (
+     organization_id = current_setting('app.current_org')::uuid
+     AND current_setting('app.current_role') <> 'viewer'
+  );</code></pre>
+<table>
+<thead><tr><th>Role</th><th>Scope</th><th>Representative permissions</th></tr></thead>
+<tbody>
+<tr><td><strong>Owner</strong></td><td>Org</td><td>Full control incl. billing, delete org, manage all admins; single per-org (AC-5 separation of duties)</td></tr>
+<tr><td><strong>Admin</strong></td><td>Org</td><td>Manage members/roles, templates, integrations, all projects; cannot delete org</td></tr>
+<tr><td><strong>Manager</strong></td><td>Project(s)</td><td>Create/edit projects & tasks, assign RACI, configure approvals, run reports</td></tr>
+<tr><td><strong>Member</strong></td><td>Assigned work</td><td>Create/update own & assigned tasks, comment, upload, complete checklists</td></tr>
+<tr><td><strong>Approver</strong></td><td>Approval steps</td><td>Approve/reject routed steps; may be combined with another role</td></tr>
+<tr><td><strong>Viewer</strong></td><td>Read-only</td><td>View permitted projects/reports; no writes (enforced in RLS <code>WITH CHECK</code>)</td></tr>
+</tbody>
+</table>
+<div class="callout warn"><strong>Field-level restriction on sensitive columns.</strong> Columns such as <code>users.compensation</code>, <code>users.national_id</code>, or <code>memberships.pay_band</code> are protected beyond row-level rules: (1) held in a separate <code>user_sensitive</code> table with its own RLS restricting <code>SELECT</code> to Owner/Admin; (2) exposed only through a <code>SECURITY DEFINER</code> view / GraphQL field-level authorization that returns <code>null</code> for unauthorized roles; (3) encrypted at rest with a column key (SC-28, SC-12 key management) and never written to <code>audit_logs.diff</code> in cleartext (redaction filter). This satisfies AC-6 least privilege at field granularity.</div>
+
+<h4>4. API Design</h4>
+<p>REST is the primary transactional surface; GraphQL serves rich read/aggregation for dashboards to avoid client-side over-fetching; webhooks push events to integrations. All endpoints require OIDC/JWT bearer auth, are scoped by OAuth2 scopes, and inherit RLS tenant context. Input validated against schema (SI-10), and all mutating routes are rate-limited (SC-5) and audit-logged (AU-2). Endpoints map to OWASP ASVS: <strong>V1</strong> (Architecture), <strong>V4</strong> (Access Control), <strong>V5</strong> (Validation/Encoding), <strong>V7</strong> (Error/Logging), <strong>V13</strong> (API/Web Service) in ASVS v4.0.3; equivalently the V1–V17 chapters in ASVS v5.0. Mobile clients additionally meet OWASP <strong>MASVS</strong> (MASVS-AUTH, MASVS-NETWORK, MASVS-STORAGE).</p>
+<table>
+<thead><tr><th>Method</th><th>Path</th><th>Purpose</th><th>Auth scope</th></tr></thead>
+<tbody>
+<tr><td>POST</td><td><code>/v1/auth/token</code></td><td>OIDC token exchange / refresh</td><td>public (credentialed)</td></tr>
+<tr><td>GET</td><td><code>/v1/orgs/{orgId}/projects</code></td><td>List projects (paginated, filterable)</td><td><code>projects:read</code></td></tr>
+<tr><td>POST</td><td><code>/v1/orgs/{orgId}/projects</code></td><td>Create project (optionally from template)</td><td><code>projects:write</code> (Manager+)</td></tr>
+<tr><td>GET</td><td><code>/v1/orgs/{orgId}/tasks?assignee=&state=</code></td><td>List/filter tasks</td><td><code>tasks:read</code></td></tr>
+<tr><td>POST</td><td><code>/v1/orgs/{orgId}/tasks</code></td><td>Create task</td><td><code>tasks:write</code></td></tr>
+<tr><td>PATCH</td><td><code>/v1/orgs/{orgId}/tasks/{taskId}</code></td><td>Update task (partial; transitions workflow_state)</td><td><code>tasks:write</code></td></tr>
+<tr><td>POST</td><td><code>/v1/orgs/{orgId}/tasks/{taskId}/approvals</code></td><td>Request approval (routes steps)</td><td><code>approvals:write</code></td></tr>
+<tr><td>POST</td><td><code>/v1/orgs/{orgId}/approvals/{id}/steps/{stepId}/decision</code></td><td>Approve/reject a step</td><td><code>approvals:decide</code> (Approver)</td></tr>
+<tr><td>POST</td><td><code>/v1/orgs/{orgId}/attachments/upload-url</code></td><td>Mint signed upload URL</td><td><code>files:write</code></td></tr>
+<tr><td>GET</td><td><code>/v1/orgs/{orgId}/reports/{id}/export?format=csv|pdf</code></td><td>Generate/download report (async job)</td><td><code>reports:read</code></td></tr>
+<tr><td>POST</td><td><code>/v1/orgs/{orgId}/webhooks</code></td><td>Register integration endpoint</td><td><code>webhooks:admin</code> (Admin)</td></tr>
+</tbody>
+</table>
+<h5>GraphQL schema excerpt (dashboard reads)</h5>
+<pre><code>type Project {
+  id: ID!
+  name: String!
+  status: ProjectStatus!
+  dueDate: Date
+  progress: Float!                 # derived: completed/total tasks
+  tasks(state: ID, assignee: ID, first: Int = 50, after: String): TaskConnection!
+  milestones: [Milestone!]!
+  raci: [RaciAssignment!]!
+}
+
+type Task {
+  id: ID!
+  title: String!
+  state: WorkflowState!
+  assignee: User
+  dueDate: Date
+  priority: Int!
+  dependencies: [Task!]!           # DAG predecessors
+  checklist: [ChecklistItem!]!
+}
+
+type Query {
+  project(id: ID!): Project        # RLS-scoped to caller's organization
+  myTasks(dueBefore: Date, first: Int = 25, after: String): TaskConnection!
+}</code></pre>
+<h5>Webhook events + signature</h5>
+<table>
+<thead><tr><th>Event</th><th>Fires when</th></tr></thead>
+<tbody>
+<tr><td><code>task.created</code> / <code>task.updated</code> / <code>task.completed</code></td><td>Task lifecycle changes</td></tr>
+<tr><td><code>task.assigned</code></td><td>Assignee set/changed</td></tr>
+<tr><td><code>approval.requested</code> / <code>approval.approved</code> / <code>approval.rejected</code></td><td>Approval routing outcomes</td></tr>
+<tr><td><code>comment.created</code> / <code>mention.created</code></td><td>Discussion & @mention</td></tr>
+<tr><td><code>attachment.scanned</code></td><td>AV scan verdict ready</td></tr>
+<tr><td><code>project.created</code> / <code>milestone.reached</code></td><td>Project & milestone events</td></tr>
+</tbody>
+</table>
+<div class="callout"><strong>HMAC signing (SC-8, SC-23, ASVS V13 API integrity):</strong> every webhook POST carries <code>X-Praveno-Signature: t=<unix_ts>,v1=<hex></code> where <code>v1 = HMAC-SHA256(secret, "{t}.{raw_body}")</code>. Receivers recompute the HMAC with the per-endpoint shared secret, compare in constant time, and reject if the timestamp skew exceeds 5 minutes (replay protection). Delivery is at-least-once with exponential backoff from the worker fleet; consumers must be idempotent on the <code>event_id</code>.</div>
+
+<h4>5. Redis Usage & Object-Storage Flow</h4>
+<table>
+<thead><tr><th>Use case</th><th>Structure / mechanism</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>Sessions</td><td><code>sess:{sid}</code> hash, TTL</td><td>Externalizes session so app nodes stay stateless; supports AC-12 session termination</td></tr>
+<tr><td>Rate-limit counters</td><td><code>rl:{org}:{route}:{window}</code> INCR + EXPIRE (sliding window)</td><td>Backs SC-5 throttling; per-org and per-IP buckets</td></tr>
+<tr><td>Job queues</td><td>Streams (<code>XADD</code>/consumer groups) per queue: <code>q:notify</code>, <code>q:avscan</code>, <code>q:export</code>, <code>q:webhook</code>, <code>q:recurrence</code></td><td>At-least-once delivery, per-consumer ack, dead-letter stream</td></tr>
+<tr><td>Notification fan-out</td><td>Pub/Sub + worker fan-out to per-user <code>notifications</code> rows + push</td><td>Decouples burst writes from request path</td></tr>
+<tr><td>Caching</td><td><code>cache:{org}:project:{id}</code> JSON, short TTL + explicit invalidation on write</td><td>Cuts replica load for hot dashboards</td></tr>
+<tr><td>Distributed locks</td><td><code>lock:{resource}</code> via <code>SET NX PX</code> (Redlock for critical sections)</td><td>Serializes recurrence generation & report scheduling to avoid dupes</td></tr>
+</tbody>
+</table>
+<pre><code>Object-storage secure file flow (SI-3 malicious-code, SC-28 at-rest, AC-3):
+1. Client → POST /attachments/upload-url  → API returns short-lived pre-signed PUT URL
+                                             (scoped to org prefix: s3://bucket/{orgId}/{uuid})
+2. Client → PUT file directly to S3        → metadata row created with scan_status='pending'
+3. S3 event → enqueue q:avscan             → worker streams object to AV engine (e.g. ClamAV/vendor)
+4. AV verdict → scan_status='clean'|'infected'; infected objects quarantined + purged;
+                webhook attachment.scanned fired
+5. Download → API mints short-lived pre-signed GET URL only if scan_status='clean' AND caller
+              passes RLS + RBAC on the parent entity.
+All objects encrypted at rest (SSE-KMS); URLs expire in minutes; no public bucket ACLs.</code></pre>
+
+<h4>6. Deployment Topology — Sized for 20,000 Users</h4>
+<p><strong>Assumptions (stated):</strong> 20,000 registered users; ~30% concurrency at business peak = <strong>6,000 concurrent</strong>; average active user generates ~0.3 req/s → <strong>~1,800 req/s</strong> steady, provision headroom for <strong>~3,000 req/s</strong> peak; read:write ≈ 80:20; each API node sustains ~400 req/s at target p95 < 250 ms. Instance counts assume Moderate availability target (99.9%) and N+1 redundancy across ≥2 zones.</p>
+<table>
+<thead><tr><th>Component</th><th>Sizing</th><th>Rationale / autoscale trigger</th></tr></thead>
+<tbody>
+<tr><td>API nodes (stateless)</td><td>8 baseline (2 vCPU / 4 GB) across ≥2 AZs, autoscale 8→20</td><td>3,000 peak ÷ 400/node ≈ 8; scale out at CPU > 65% or p95 > 250 ms for 3 min</td></tr>
+<tr><td>Load balancer</td><td>Managed L7, multi-AZ, TLS 1.3</td><td>Health-checks nodes; sheds to WAF/CDN edge</td></tr>
+<tr><td>PostgreSQL primary</td><td>1 primary (8 vCPU / 32 GB, provisioned IOPS)</td><td>Handles ~360 writes/s (20% of 1,800); vertical headroom before sharding</td></tr>
+<tr><td>Read replicas</td><td>3 replicas (same class)</td><td>Serve 80% reads + reporting; add replica when replica CPU > 70% or lag > 2 s</td></tr>
+<tr><td>DB connection pool</td><td>PgBouncer (transaction mode), ~25 server conns/node → ~200–500 pooled</td><td>Keeps backend connections well under <code>max_connections</code>; app opens thousands of client conns safely</td></tr>
+<tr><td>Redis cluster</td><td>3 primaries + 3 replicas (6 nodes), ~4 GB each</td><td>Sessions/queues/cache; failover via replica promotion; scale shards at mem > 70% or CPU > 70%</td></tr>
+<tr><td>Worker fleet</td><td>4 baseline (2 vCPU / 4 GB), autoscale 4→12</td><td>Consumes queues; scale on <code>q:*</code> backlog depth > 1,000 or oldest-msg age > 60 s</td></tr>
+<tr><td>Object storage</td><td>S3-compatible, SSE-KMS, lifecycle to cold tier</td><td>Elastic; cost-tiered by age; per-org key prefixes</td></tr>
+<tr><td>CDN + WAF</td><td>Global edge, OWASP CRS</td><td>Absorbs static asset + signed-URL traffic; DDoS shield (SC-5)</td></tr>
+<tr><td>Observability</td><td>Metrics + distributed tracing + centralized logs; SLO alerting</td><td>Feeds RMF <em>Monitor</em> step / CA-7 continuous monitoring; on-call via IR-4</td></tr>
+</tbody>
+</table>
+<div class="callout ok"><strong>Scale-out path beyond 20k:</strong> the first bottleneck is the single write primary. Growth path is (1) push more reads to replicas + cache, then (2) partition/shard the hottest tenant tables by <code>organization_id</code> (hash) or move the largest tenants to dedicated database clusters — the tenant-leading key design makes this migration mechanical rather than a rewrite.</div></section>
+<!--__GOV_SECURITY__--><section class="gov-pane gov-body" data-gov="gov-security"><h3>Security & Controls</h3>
+
+<p>This pillar defines the security control baseline for the <strong>Praveno Platform</strong> (multi-tenant SaaS) and its <strong>HTML5 PWA / Android / iOS</strong> proof-of-concept. Controls are mapped to <strong>FIPS 199</strong> categorization, <strong>NIST SP 800-37 Rev 2</strong> Risk Management Framework, <strong>NIST SP 800-53 Rev 5</strong>, <strong>OWASP ASVS</strong> (target <strong>Level 2</strong>), and <strong>OWASP MASVS v2</strong>. The production stack is fixed (PostgreSQL, Redis, S3-compatible object storage, REST + GraphQL + webhooks); every control below is designed around that stack.</p>
+
+<div class="callout"><strong>Scope & assumptions.</strong> Multi-tenant, cloud-hosted, internet-facing web + mobile application processing organizational business-workflow data (project/task/approval records, comments, file attachments, PII of workforce users, and — for regulated customers — potentially Controlled Unclassified Information (CUI)). Sizing target: <strong>20,000 users</strong> across Web (PWA), Android, and iOS. Data is <strong>not</strong> classified national-security information; the highest sensitivity handled is CUI + business-confidential + PII.</div>
+
+<h4>1. FIPS 199 Security Categorization</h4>
+
+<p>Per <strong>FIPS PUB 199</strong>, the potential impact of a loss of Confidentiality, Integrity, or Availability is rated LOW / MODERATE / HIGH. The overall category is the <em>high-water mark</em> across the three objectives.</p>
+
+<table>
+<thead>
+<tr><th>Security Objective</th><th>Impact Level</th><th>Rationale</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Confidentiality</strong></td><td>Moderate</td><td>System stores workforce PII (names, emails, roles), business-confidential project data, approval/routing decisions, and sensitive records entrusted by tenant organizations. Unauthorized disclosure of one tenant's data to another would cause serious adverse effect on organizational operations, reputation, and contractual/legal standing — but not catastrophic/national-security harm.</td></tr>
+<tr><td><strong>Integrity</strong></td><td>Moderate</td><td>Approvals, RACI assignments, task-state transitions, exports, and audit logs are decision-of-record. Undetected modification (e.g., a forged approval or altered due date) could cause serious adverse effect on program delivery and accountability. Integrity is enforced by RLS, immutable append-only audit logs, and record hashing.</td></tr>
+<tr><td><strong>Availability</strong></td><td>Moderate</td><td>Field users depend on the platform for daily task and approval workflows; extended outage causes serious operational disruption and SLA breach. However, business workflows tolerate short (minutes-to-hours) disruption and offline PWA mode provides degraded continuity, so impact is not High.</td></tr>
+</tbody>
+</table>
+
+<div class="callout ok"><strong>Overall categorization:</strong> <code>SC Praveno = {(Confidentiality, MODERATE), (Integrity, MODERATE), (Availability, MODERATE)}</code> → <strong>System Impact Level = MODERATE</strong>. This selects the <strong>NIST SP 800-53 Rev 5 MODERATE baseline</strong> (via SP 800-53B) as the tailoring starting point. FedRAMP Moderate is the reference profile if a government or regulated tenant requires an authorization.</div>
+
+<h4>2. NIST SP 800-37 Rev 2 — Risk Management Framework (7 Steps)</h4>
+
+<p>The RMF is executed continuously across the SDLC. The table walks all seven steps as applied to Praveno, with the key artifacts each produces.</p>
+
+<table>
+<thead>
+<tr><th>#</th><th>RMF Step</th><th>What Praveno Does</th><th>Key Artifacts</th></tr>
+</thead>
+<tbody>
+<tr><td>0</td><td><strong>Prepare</strong></td><td>Establish org-level and system-level context: assign roles (System Owner, ISSO/ISSM, AO/Authorizing Official, Control Assessor), define the multi-tenant risk-management strategy and risk tolerance, inventory the stack (Postgres, Redis, S3, API gateway, WAF, KMS), and set the control baseline as MODERATE.</td><td>Risk Management Strategy; system boundary / data-flow diagram; role assignment matrix; org-defined parameter (ODP) values.</td></tr>
+<tr><td>1</td><td><strong>Categorize</strong></td><td>Apply FIPS 199 (Section 1 above) using SP 800-60 information-type guidance; document information types (project mgmt, PII, CUI) and the C/I/A ratings; establish the authorization boundary (all tenant data, API, jobs, storage).</td><td>Security Categorization document; system description; authorization boundary diagram; entry in system inventory.</td></tr>
+<tr><td>2</td><td><strong>Select</strong></td><td>Select the SP 800-53B MODERATE baseline; tailor with overlays (multi-tenancy isolation, privacy/PII, mobile/MASVS). Allocate controls to layers (org-common, hybrid, system-specific). Define continuous-monitoring strategy.</td><td>Control selection & tailoring rationale; <strong>System Security Plan (SSP)</strong> draft; control allocation matrix; ConMon strategy.</td></tr>
+<tr><td>3</td><td><strong>Implement</strong></td><td>Build controls into the platform: RLS + RBAC, argon2id, MFA/SSO (OIDC/SAML), TLS 1.2+/AES-256, KMS key rotation, WAF, SIEM pipeline, virus scanning, IaC-enforced config. Document as-built implementation for each control.</td><td>Updated SSP with implementation statements; IaC (Terraform) modules; hardening baselines; architecture-as-code.</td></tr>
+<tr><td>4</td><td><strong>Assess</strong></td><td>Independent assessor tests control effectiveness using SP 800-53A procedures: SAST/DAST/IAST, dependency & container scans, config review, and third-party penetration test (ties to CA-8). Findings triaged by severity.</td><td><strong>Security Assessment Report (SAR)</strong>; assessment plan; pen-test report; <strong>Plan of Action & Milestones (POA&M)</strong>.</td></tr>
+<tr><td>5</td><td><strong>Authorize</strong></td><td>System Owner packages SSP + SAR + POA&M; AO reviews residual risk and renders a risk-based authorization decision (ATO / conditional ATO / denial). Risk explicitly accepted and time-bound.</td><td>Authorization package; risk determination; <strong>Authorization to Operate (ATO)</strong> letter with expiry & conditions.</td></tr>
+<tr><td>6</td><td><strong>Monitor</strong></td><td>Continuous monitoring (<strong>ConMon</strong>): automated control validation, vuln scanning on a defined cadence, SIEM alerting, POA&M burn-down, change-impact analysis, and periodic reauthorization. Ongoing authorization maintained via the metrics feed.</td><td>ConMon dashboards; updated POA&M; monthly vuln/deviation reports; change tickets; annual assessment refresh.</td></tr>
+</tbody>
+</table>
+
+<h4>3. NIST SP 800-53 Rev 5 — Control Mapping</h4>
+
+<p>Representative controls from the MODERATE baseline with concrete Praveno implementations. Control IDs and names are exact.</p>
+
+<h5>AC — Access Control</h5>
+<table>
+<thead><tr><th>Control ID</th><th>Control Name</th><th>How Praveno Implements It</th></tr></thead>
+<tbody>
+<tr><td>AC-2</td><td>Account Management</td><td>Lifecycle managed via org admin console + SCIM provisioning from IdP; account types (owner, admin, member, guest, service) defined; automated disable of inactive accounts; Postgres <code>users</code> + <code>audit_logs</code> record create/modify/disable/delete events.</td></tr>
+<tr><td>AC-3</td><td>Access Enforcement</td><td>PostgreSQL <strong>Row-Level Security (RLS)</strong> policies keyed on <code>org_id</code> (tenant isolation) plus application RBAC; every REST/GraphQL resolver checks role + object ownership before returning data.</td></tr>
+<tr><td>AC-6</td><td>Least Privilege</td><td>Granular RBAC roles + field-level permissions; RACI-aware scoping; service accounts hold only the DB grants needed; no shared admin credentials; privileged actions gated behind step-up auth.</td></tr>
+<tr><td>AC-7</td><td>Unsuccessful Logon Attempts</td><td>Redis-backed counter locks the account after N failed attempts (org-configurable, default 5) with exponential backoff + optional CAPTCHA; lockout events logged and alertable.</td></tr>
+<tr><td>AC-12</td><td>Session Termination</td><td>Idle + absolute session timeouts; server-side session store in Redis invalidated on logout, role change, or password reset; JWT access tokens short-lived (15 min) with rotating refresh tokens; active-session management UI lets users revoke devices.</td></tr>
+</tbody>
+</table>
+
+<h5>IA — Identification and Authentication</h5>
+<table>
+<thead><tr><th>Control ID</th><th>Control Name</th><th>How Praveno Implements It</th></tr></thead>
+<tbody>
+<tr><td>IA-2</td><td>Identification and Authentication (Organizational Users)</td><td>Each user uniquely identified; authentication via OIDC/SAML SSO or local credentials; no shared logins.</td></tr>
+<tr><td>IA-2(1)</td><td>MFA to Privileged Accounts</td><td>TOTP/WebAuthn (FIDO2 passkeys) enforced for admin/privileged roles; MFA-ready for all users and mandatory for privileged; step-up MFA on sensitive operations (approvals, exports, member removal).</td></tr>
+<tr><td>IA-5</td><td>Authenticator Management</td><td>Passwords hashed with <strong>argon2id</strong> (tuned memory/time cost); min 12 chars + breach-list check; secure reset via signed, time-boxed tokens; API keys/secrets stored in KMS-backed secrets manager with rotation.</td></tr>
+<tr><td>IA-8</td><td>Identification and Authentication (Non-Organizational Users)</td><td>External guest/partner collaborators authenticate via federated identity (Google/Microsoft) or invite-scoped magic links with least-privilege guest roles.</td></tr>
+</tbody>
+</table>
+
+<h5>AU — Audit and Accountability</h5>
+<table>
+<thead><tr><th>Control ID</th><th>Control Name</th><th>How Praveno Implements It</th></tr></thead>
+<tbody>
+<tr><td>AU-2</td><td>Event Logging</td><td>Auditable events defined: authn, authz denials, record edits, approvals/routing, exports, permission & role changes, file up/download, admin actions.</td></tr>
+<tr><td>AU-3</td><td>Content of Audit Records</td><td>Each <code>audit_logs</code> row captures who (actor + org), what (action + object type/id), when (UTC timestamp), where (source IP, user agent, device), and before/after diff for edits.</td></tr>
+<tr><td>AU-6</td><td>Audit Record Review, Analysis, and Reporting</td><td>Logs shipped to SIEM; correlation rules + scheduled reviews; anomaly alerts (mass export, off-hours admin, impossible-travel) routed to security on-call.</td></tr>
+<tr><td>AU-9</td><td>Protection of Audit Information</td><td>Append-only, tenant-isolated audit store; write-once semantics; per-record hash chaining for tamper-evidence; access to audit data restricted to security roles; backups encrypted.</td></tr>
+<tr><td>AU-12</td><td>Audit Record Generation</td><td>Audit generation embedded at the application + DB trigger layer so logging cannot be bypassed by the API; covers all AU-2 event types across web/mobile/API surfaces.</td></tr>
+</tbody>
+</table>
+
+<h5>SC — System and Communications Protection</h5>
+<table>
+<thead><tr><th>Control ID</th><th>Control Name</th><th>How Praveno Implements It</th></tr></thead>
+<tbody>
+<tr><td>SC-7</td><td>Boundary Protection</td><td>WAF + managed DDoS at the edge; API gateway; network segmentation (public/app/data subnets); security groups deny-by-default; Postgres/Redis/S3 not internet-exposed.</td></tr>
+<tr><td>SC-8</td><td>Transmission Confidentiality and Integrity</td><td><strong>TLS 1.2+ (prefer 1.3)</strong> on all external + internal service-to-service traffic; HSTS; modern cipher suites only; certificate pinning on mobile.</td></tr>
+<tr><td>SC-12</td><td>Cryptographic Key Establishment and Management</td><td>Keys generated, stored, and rotated in a managed <strong>KMS/HSM</strong>; envelope encryption; automated rotation schedule; separation of duties for key admin.</td></tr>
+<tr><td>SC-13</td><td>Cryptographic Protection</td><td><strong>FIPS 140-2/140-3 validated</strong> modules; AES-256-GCM for data, argon2id for passwords, SHA-256/384 hashing, ECDSA/RSA for signatures; deprecated algorithms (MD5, SHA-1, DES, RC4) prohibited.</td></tr>
+<tr><td>SC-28</td><td>Protection of Information at Rest</td><td><strong>AES-256 at rest</strong> for Postgres (TDE/volume encryption), Redis, and S3 object storage (SSE-KMS); backups encrypted; field-level encryption for the most sensitive attributes.</td></tr>
+</tbody>
+</table>
+
+<h5>SI — System and Information Integrity</h5>
+<table>
+<thead><tr><th>Control ID</th><th>Control Name</th><th>How Praveno Implements It</th></tr></thead>
+<tbody>
+<tr><td>SI-2</td><td>Flaw Remediation</td><td>Patch SLAs by severity; automated dependency updates (Dependabot/Renovate); base-image rebuilds; POA&M tracks remediation to closure.</td></tr>
+<tr><td>SI-3</td><td>Malicious Code Protection</td><td>All uploads scanned (ClamAV/managed AV) before the S3 object is made available; quarantine on detection; signed URLs issued only for clean files.</td></tr>
+<tr><td>SI-4</td><td>System Monitoring</td><td>SIEM + IDS/behavioral analytics; app + infra telemetry; alerting on auth anomalies, rate-limit trips, and data-exfil patterns.</td></tr>
+<tr><td>SI-7</td><td>Software, Firmware, and Information Integrity</td><td>Signed artifacts + SBOM; container image signing/verification (Sigstore/cosign); audit-log hash chaining; integrity checks on critical records.</td></tr>
+<tr><td>SI-10</td><td>Information Input Validation</td><td>Server-side validation on every input; JSON Schema / GraphQL schema + typed DTO validation; parameterized queries (no string-built SQL); output encoding to block XSS/injection.</td></tr>
+</tbody>
+</table>
+
+<h5>CM — Configuration Management</h5>
+<table>
+<thead><tr><th>Control ID</th><th>Control Name</th><th>How Praveno Implements It</th></tr></thead>
+<tbody>
+<tr><td>CM-2</td><td>Baseline Configuration</td><td>All infra defined as code (Terraform) and versioned; golden container images; baselines stored in Git as source of truth.</td></tr>
+<tr><td>CM-3</td><td>Configuration Change Control</td><td>PR-based change control with mandatory review + CI gates; change tickets; security impact analysis for baseline changes.</td></tr>
+<tr><td>CM-6</td><td>Configuration Settings</td><td>Hardened settings enforced via IaC + policy-as-code (OPA/Conftest); drift detection; CIS-benchmark-aligned OS/container configs.</td></tr>
+<tr><td>CM-7</td><td>Least Functionality</td><td>Minimal base images; unused ports/services/features disabled; deny-by-default egress; feature flags gate non-GA functionality.</td></tr>
+<tr><td>CM-8</td><td>System Component Inventory</td><td>Automated asset + SBOM inventory of services, containers, and dependencies, continuously reconciled with the running fleet.</td></tr>
+</tbody>
+</table>
+
+<h5>CP · IR · RA · CA · AT · PL · SA</h5>
+<table>
+<thead><tr><th>Control ID</th><th>Control Name</th><th>How Praveno Implements It</th></tr></thead>
+<tbody>
+<tr><td>CP-9</td><td>System Backup</td><td>Automated encrypted backups of Postgres (PITR/WAL), Redis snapshots, and S3 versioning + cross-region replication; backups tested.</td></tr>
+<tr><td>CP-10</td><td>System Recovery and Reconstitution</td><td>Documented RTO/RPO; runbooks for restore; PITR + IaC redeploy enable full reconstitution; recovery drills on a set cadence.</td></tr>
+<tr><td>IR-4</td><td>Incident Handling</td><td>Defined IR lifecycle (detect, contain, eradicate, recover, learn); on-call rotation; SIEM-driven detection; post-incident reviews.</td></tr>
+<tr><td>IR-6</td><td>Incident Reporting</td><td>Defined internal + customer/regulator notification paths and timelines (contractual/breach-law aligned); status page for availability incidents.</td></tr>
+<tr><td>IR-8</td><td>Incident Response Plan</td><td>Maintained IRP with roles, severities, escalation, and communication templates; reviewed and exercised periodically.</td></tr>
+<tr><td>RA-3</td><td>Risk Assessment</td><td>Threat modeling (STRIDE) per major feature; documented risk register feeding the POA&M; risk re-assessed on significant change.</td></tr>
+<tr><td>RA-5</td><td>Vulnerability Monitoring and Scanning</td><td>Scheduled SAST/DAST, dependency (SCA), container, and IaC scanning in CI + on cadence; results tracked with SLA to remediation.</td></tr>
+<tr><td>CA-2</td><td>Control Assessments</td><td>Independent assessment per SP 800-53A producing the SAR; annual reassessment; third-party audits (e.g., SOC 2) supported.</td></tr>
+<tr><td>CA-7</td><td>Continuous Monitoring</td><td>ConMon program: automated control validation, metrics dashboards, POA&M burn-down, and ongoing-authorization feed.</td></tr>
+<tr><td>CA-8</td><td>Penetration Testing</td><td>Independent annual (and major-release) pen test against web + mobile + API; findings triaged into POA&M; retest to closure.</td></tr>
+<tr><td>AT-2</td><td>Literacy Training and Awareness</td><td>Security + privacy awareness training for staff, incl. phishing simulations and secure-coding modules for engineers; completion tracked.</td></tr>
+<tr><td>PL-8</td><td>Security and Privacy Architectures</td><td>Documented defense-in-depth + zero-trust architecture; multi-tenant isolation model; privacy-by-design data flows recorded in the SSP.</td></tr>
+<tr><td>SA-11</td><td>Developer Testing and Evaluation</td><td>Mandatory SAST/DAST/SCA + unit/integration security tests in CI gates; code review required before merge.</td></tr>
+<tr><td>SA-15</td><td>Development Process, Standards, and Tools</td><td>Documented secure SDLC; secure-coding standards; pinned/approved toolchain; secrets scanning; signed commits and protected branches.</td></tr>
+</tbody>
+</table>
+
+<h4>4. OWASP ASVS Mapping — Target Level 2 (L2)</h4>
+
+<p><strong>Target: ASVS Level 2</strong> (appropriate for applications handling sensitive business data / PII). References use ASVS v4.0.3 requirement numbering; the equivalent v5.0 chapters are noted where the structure shifted. One representative requirement per chapter is shown with the satisfying control.</p>
+
+<table>
+<thead>
+<tr><th>Chapter</th><th>Representative Requirement</th><th>Praveno Control That Satisfies It</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>V1 Architecture, Design & Threat Modeling</strong></td><td>1.1.2 — Threat modeling performed for all design changes</td><td>STRIDE threat models per feature; security architecture documented in SSP (ties to PL-8, RA-3); trust boundaries defined.</td></tr>
+<tr><td><strong>V2 Authentication</strong></td><td>2.1.1 — User-set passwords ≥ 12 characters</td><td>Password policy enforces ≥12 chars + breach-list check; argon2id hashing; MFA (2.8.x) via TOTP/WebAuthn.</td></tr>
+<tr><td><strong>V3 Session Management</strong></td><td>3.3.1 — Logout and idle timeout invalidate the session</td><td>Server-side Redis session store invalidated on logout/idle/absolute timeout; short-lived JWT + rotating refresh; device revocation UI.</td></tr>
+<tr><td><strong>V4 Access Control</strong></td><td>4.1.3 — Least privilege; enforce access control server-side</td><td>RBAC + field-level perms + Postgres RLS on <code>org_id</code>; every resolver authorizes server-side; deny-by-default.</td></tr>
+<tr><td><strong>V5 Validation, Sanitization & Encoding</strong></td><td>5.1.3 — All input validated (positive/allow-list)</td><td>Schema/typed validation on all inputs; parameterized queries; contextual output encoding; CSP header set.</td></tr>
+<tr><td><strong>V6 Stored Cryptography</strong></td><td>6.2.1 — Only approved cryptographic algorithms used</td><td>AES-256-GCM, argon2id, SHA-256/384; FIPS-validated modules (SC-13); no MD5/SHA-1/DES; IVs never reused (6.2.3).</td></tr>
+<tr><td><strong>V7 Error Handling & Logging</strong></td><td>7.1.1 — No sensitive data in logs; 7.4.x generic errors</td><td>Secrets/PII redacted from logs; generic client error messages; structured logs to SIEM (AU-2/AU-3).</td></tr>
+<tr><td><strong>V8 Data Protection</strong></td><td>8.3.4 — Sensitive data identified and protected</td><td>Data classification; AES-256 at rest (SC-28); field-level encryption for sensitive attributes; cache-control on sensitive responses.</td></tr>
+<tr><td><strong>V9 Communications</strong></td><td>9.1.1 — TLS for all client & backend connections</td><td>TLS 1.2+/1.3 everywhere, HSTS, strong ciphers (SC-8); mobile certificate pinning.</td></tr>
+<tr><td><strong>V10 Malicious Code</strong></td><td>10.3.2 — Integrity of code & dependencies verified</td><td>SBOM + SCA scanning; signed artifacts/images (cosign); dependency pinning; secrets scanning in CI.</td></tr>
+<tr><td><strong>V11 Business Logic</strong></td><td>11.1.4 — Anti-automation on high-value business flows</td><td>Rate limiting + bot protection on approvals/exports/invites; sequential-workflow enforcement; step-up MFA on high-value actions.</td></tr>
+<tr><td><strong>V12 Files & Resources</strong></td><td>12.4.1 — Files stored outside webroot with access control</td><td>Attachments in S3 with signed, time-boxed URLs; type/size allow-lists; AV scan before availability (SI-3); no direct path access.</td></tr>
+<tr><td><strong>V13 API & Web Service</strong></td><td>13.2.1 — RESTful methods authorized; 13.x schema validation</td><td>Per-endpoint authZ; JSON-Schema / GraphQL schema validation; depth/complexity limits; API rate limiting via Redis.</td></tr>
+<tr><td><strong>V14 Configuration</strong></td><td>14.4.x — Security headers; 14.1.x hardened build/deploy</td><td>CSP, X-Content-Type-Options, HSTS, Referrer-Policy set; hardened IaC baselines (CM-6); secrets in KMS, not in config.</td></tr>
+</tbody>
+</table>
+
+<div class="callout"><strong>ASVS v5.0 note:</strong> v5.0 reorganizes the standard (e.g., encoding/injection consolidated, dedicated tokens/OAuth content, self-contained-token handling). The Praveno controls above satisfy the equivalent v5.0 chapters; the verification checklist is maintained against both v4.0.3 and v5.0 during transition.</div>
+
+<h4>5. OWASP MASVS v2 — Mobile (Android / iOS Wrappers)</h4>
+
+<p>The PWA is wrapped for Android and iOS. Controls map to the seven MASVS v2 groups; representative control IDs shown.</p>
+
+<table>
+<thead>
+<tr><th>MASVS Group</th><th>Representative Control</th><th>Praveno Mobile Implementation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>MASVS-STORAGE</strong></td><td>STORAGE-1 — No sensitive data in insecure local storage</td><td>No tokens/PII in plaintext <code>localStorage</code>, logs, backups, or clipboard; offline cache holds only non-sensitive workflow data, encrypted; sensitive fields excluded from OS backups.</td></tr>
+<tr><td><strong>MASVS-CRYPTO</strong></td><td>CRYPTO-1/2 — Correct primitives, secure key management</td><td>Keys in <strong>Android Keystore</strong> / <strong>iOS Keychain + Secure Enclave</strong>; no hardcoded keys; AES-256-GCM; no MD5/SHA-1/DES.</td></tr>
+<tr><td><strong>MASVS-AUTH</strong></td><td>AUTH-2 — Local authentication bound to server session</td><td>Biometric unlock (BiometricPrompt / Face ID / Touch ID) gates the app; tokens short-lived and server-validated; MFA/SSO reused from platform.</td></tr>
+<tr><td><strong>MASVS-NETWORK</strong></td><td>NETWORK-1/2 — Encrypted transport + endpoint verification</td><td>TLS 1.2+ enforced; <strong>certificate/public-key pinning</strong>; cleartext traffic disabled (Android <code>cleartextTrafficPermitted=false</code> / iOS ATS enforced).</td></tr>
+<tr><td><strong>MASVS-PLATFORM</strong></td><td>PLATFORM-1/2 — Safe IPC & WebView configuration</td><td>Minimal exported components; hardened WebView (no <code>file://</code> access, JS bridge locked down); screenshot/screen-recording suppressed on sensitive views; no sensitive data via deep links.</td></tr>
+<tr><td><strong>MASVS-CODE</strong></td><td>CODE-3/4 — Up-to-date deps, no debug artifacts in release</td><td>Release builds strip debug/logging; SCA on mobile deps; hardened build flags; exception handling avoids leaking internals.</td></tr>
+<tr><td><strong>MASVS-RESILIENCE</strong></td><td>RESILIENCE-1/3/4 — Integrity, anti-tamper, obfuscation</td><td><strong>Root/jailbreak detection</strong>; anti-debugging + emulator checks; code obfuscation (R8/ProGuard, iOS symbol stripping); app-integrity/attestation (Play Integrity / DeviceCheck/App Attest).</td></tr>
+</tbody>
+</table>
+
+<div class="callout warn"><strong>Defense-in-depth caveat:</strong> MASVS-RESILIENCE controls (root detection, obfuscation, anti-tamper) raise attacker cost but are not a substitute for server-side enforcement. All authorization, validation, and rate limiting are enforced on the backend regardless of client state.</div>
+
+<h4>6. Minimum Security Baseline — Go/No-Go Checklist</h4>
+
+<p>The non-negotiable control set every release must satisfy before deployment. Each item traces to the mappings above.</p>
+
+<table>
+<thead>
+<tr><th>#</th><th>Control</th><th>Requirement</th><th>Traces To</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td>SSO / MFA</td><td>OIDC/SAML SSO-ready; MFA (TOTP/WebAuthn) mandatory for privileged, available for all; step-up on high-value actions.</td><td>IA-2, IA-2(1); ASVS V2</td></tr>
+<tr><td>2</td><td>Password policy</td><td>argon2id hashing, ≥12 chars, breach-list check, secure time-boxed reset.</td><td>IA-5; ASVS 2.1.1</td></tr>
+<tr><td>3</td><td>Session management</td><td>Idle + absolute timeout; server-side revocable sessions; device/session management UI.</td><td>AC-12; ASVS V3</td></tr>
+<tr><td>4</td><td>Access control</td><td>RBAC + per-org isolation (RLS) + field-level permissions; least privilege; deny-by-default.</td><td>AC-3, AC-6; ASVS V4</td></tr>
+<tr><td>5</td><td>Audit trails</td><td>Full, tamper-evident audit logs on edits, approvals, exports, and admin actions.</td><td>AU-2, AU-3, AU-9</td></tr>
+<tr><td>6</td><td>Encryption</td><td>TLS 1.2+ in transit; AES-256 at rest across Postgres/Redis/S3.</td><td>SC-8, SC-28, SC-13</td></tr>
+<tr><td>7</td><td>Secrets & keys</td><td>KMS-backed secrets management; automated key rotation; no secrets in code/config.</td><td>SC-12; ASVS V6/V14</td></tr>
+<tr><td>8</td><td>Input & output handling</td><td>Server-side validation; parameterized queries; contextual output encoding; CSP.</td><td>SI-10; ASVS V5</td></tr>
+<tr><td>9</td><td>File uploads</td><td>AV/virus scanning; type + size limits; signed URLs; stored outside webroot.</td><td>SI-3; ASVS V12</td></tr>
+<tr><td>10</td><td>API security</td><td>REST + GraphQL schema validation; depth/complexity limits; per-endpoint authZ.</td><td>ASVS V13</td></tr>
+<tr><td>11</td><td>Rate limiting / bot protection</td><td>Redis-backed rate limits + anti-automation on auth and high-value flows.</td><td>AC-7; ASVS V11</td></tr>
+<tr><td>12</td><td>Dependency & supply-chain scanning</td><td>SCA + SBOM + signed artifacts/images in CI gates.</td><td>RA-5, SA-11, SI-7</td></tr>
+<tr><td>13</td><td>Vulnerability disclosure</td><td>Published security.txt / VDP; intake and triage process; coordinated disclosure.</td><td>RA-5, IR-6</td></tr>
+<tr><td>14</td><td>Logging & alerting</td><td>Centralized SIEM; anomaly alerting; on-call routing.</td><td>AU-6, SI-4</td></tr>
+<tr><td>15</td><td>Secure CI/CD</td><td>SAST/DAST/SCA/IaC scans as merge gates; protected branches; signed commits; secrets scanning.</td><td>SA-15, CM-3</td></tr>
+<tr><td>16</td><td>Penetration testing</td><td>Independent pen test annually and on major release; findings to POA&M and retested.</td><td>CA-8</td></tr>
+</tbody>
+</table>
+
+<div class="callout ok"><strong>Baseline verdict:</strong> With the sixteen controls above implemented and evidenced, Praveno meets the NIST SP 800-53 Rev 5 MODERATE baseline, ASVS Level 2, and MASVS v2 for its Web/Android/iOS surfaces — the minimum bar for an authorization decision (ATO) and for handling CUI + PII multi-tenant business-workflow data at FIPS 199 MODERATE.</div></section>
+<!--__GOV_TESTING__--><section class="gov-pane gov-body" data-gov="gov-testing"><h3>Stress & Testing</h3>
+
+<p>This pillar defines how the <strong>Praveno Platform</strong> is verified for correctness, performance, security, and resilience at a target scale of <strong>20,000 registered users</strong> across Web PWA, Android, and iOS. It maps directly to the <strong>NIST SP 800-37 Rev 2</strong> RMF <em>Assess</em> step (Step 5) and the <strong>NIST SP 800-53 Rev 5</strong> control families <code>CA</code> (Assessment, Authorization & Monitoring), <code>SI</code> (System & Information Integrity), <code>CP</code> (Contingency Planning), and <code>SA-11</code> (Developer Testing & Evaluation). Security testing is anchored to <strong>OWASP ASVS v4.0.3</strong> (web/API) and <strong>OWASP MASVS</strong> (mobile). The system is categorized <strong>FIPS 199 = MODERATE</strong> (Confidentiality: Moderate, Integrity: Moderate, Availability: Moderate) given multi-tenant PII and business-workflow data; test rigor is calibrated to that impact level.</p>
+
+<div class="callout warn"><strong>Read this first.</strong> The per-platform results tables in section 3 are <strong>MODELED projections</strong> derived from the capacity model in section 2 and per-request cost budgets — they are <em>not</em> measurements from a live 20,000-user run. Before production authorization (RMF Step 6), these projections MUST be replaced with measured results from a distributed load test (section 5) executed against a production-parity staging environment.</div>
+
+<h4>1. The Four Test Layers</h4>
+
+<table>
+<thead><tr><th>Layer</th><th>Objective</th><th>Tools</th><th>Exit criteria</th></tr></thead>
+<tbody>
+<tr><td><strong>Functional</strong></td><td>Prove every workflow path is correct: intake, stage transitions, dependency gating, approval routing/RACI, reminders, file limits, exports, RBAC, offline sync. Traces to <code>SA-11(1)</code>.</td><td>Playwright (Web + mobile web), Detox (iOS/Android RN), Jest/Vitest (unit), Supertest + Pact (REST/GraphQL contract), Newman (Postman API), Cucumber (BDD acceptance)</td><td>100% of P0/P1 workflow paths automated and green; ≥ 85% line + ≥ 80% branch coverage on server domain logic; zero open Sev-1/Sev-2 functional defects; all contract tests pass against the published OpenAPI/GraphQL schema.</td></tr>
+<tr><td><strong>Performance</strong></td><td>Validate throughput and latency under Load (steady peak), Stress (beyond peak to find the knee), Soak (8h for leaks/GC drift), and Spike (instant surge). Traces to <code>SC-6</code> (resource availability), <code>SC-5</code> (DoS protection).</td><td>k6 + k6 Cloud (distributed), Grafana k6 Operator (Kubernetes), Locust, Artillery, Gatling; observability: Prometheus + Grafana, OpenTelemetry traces, pg_stat_statements, Redis <code>INFO</code>, k6 <code>xk6-output-prometheus-remote</code></td><td>All SLOs in section 4 met at 1.0× peak; graceful degradation (no cascading failure, shed load via 429) beyond 1.5× peak; < 5% p95 latency drift across the 8h soak; no unbounded memory/connection growth.</td></tr>
+<tr><td><strong>Security</strong></td><td>Verify ASVS L2 web/API controls and MASVS mobile controls; find injection, authz bypass, broken access control (cross-tenant), secrets exposure. Traces to <code>SA-11(2)</code> threat modeling, <code>SA-11(8)</code> DAST, <code>RA-5</code> vuln scanning, <code>CA-8</code> pen testing.</td><td>SAST: Semgrep, CodeQL, SonarQube. DAST: OWASP ZAP (baseline + full active), Burp Suite Pro. SCA/deps: Trivy, Grype, npm audit, OWASP Dependency-Check. Secrets: Gitleaks, TruffleHog. Mobile: MobSF, Frida, apkleaks. Pen test: annual third-party + <code>CA-8(1)</code> independent.</td><td>Zero Critical/High SAST or SCA findings unremediated (or risk-accepted with <code>PL-2</code> POA&M); ASVS L2 checklist fully evidenced; MASVS-L1 (+ MASVS-RESILIENCE for the mobile apps) met; annual <code>CA-8</code> pen test with all High/Critical closed before ATO.</td></tr>
+<tr><td><strong>Resilience</strong></td><td>Prove recovery from component failure and data-conflict scenarios: DB failover, Redis node loss, object-storage 5xx, worker queue backlog, network partition, backup/restore, and mobile offline→online sync conflicts. Traces to <code>CP-9</code> (backup), <code>CP-10</code> (recovery/reconstitution), <code>CP-2</code> (contingency plan), <code>SI-13</code> (predictable failure prevention).</td><td>Chaos: Chaos Mesh / LitmusChaos (K8s), AWS FIS, Toxiproxy (latency/partition injection), Gremlin. DB: <code>pg_rewind</code>, Patroni/repmgr failover drills, WAL-G/pgBackRest PITR restore. App-level: k6 during-chaos, custom sync-conflict harness.</td><td>Every scenario in section 6 recovers within its stated RTO/RPO; automated failover completes with ≤ 1 failed in-flight request retried successfully; PITR restore validated monthly; offline sync converges deterministically with documented conflict-resolution (LWW + vector-clock tie-break) and zero silent data loss.</td></tr>
+</tbody>
+</table>
+
+<h4>2. Capacity Model (explicit math & assumptions)</h4>
+
+<p><strong>Stated assumptions.</strong> (A) 20,000 registered users. (B) Peak concurrency = <strong>12%</strong> — a defensible figure for a B2B workflow tool where usage clusters in business hours across a few time zones; we also stress-test 15% as an upper bound. (C) An active user performs <strong>4 server-touching actions/minute</strong> at peak (open task, transition stage, comment, refresh dashboard). (D) A <strong>burst factor of 1.5×</strong> converts average steady load to sustained peak, and spikes reach <strong>~2.5×</strong> the average. (E) One effective app node sustains <strong>250 RPS</strong> with p95 headroom (Node/Go service, ~40ms mean CPU-bound work). (F) PgBouncer runs in <strong>transaction</strong> pooling mode. (G) Average file action moves <strong>2 MB</strong>; 15% of actions touch object storage.</p>
+
+<table>
+<thead><tr><th>Quantity</th><th>Formula</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td>Concurrent sessions (peak)</td><td>20,000 × 12%</td><td><strong>2,400</strong> (15% → 3,000 stress)</td></tr>
+<tr><td>Baseline actions/sec</td><td>2,400 × 4 / 60</td><td><strong>160 req/s</strong></td></tr>
+<tr><td>Sustained peak RPS</td><td>160 × 1.5 burst</td><td><strong>240 req/s</strong></td></tr>
+<tr><td>Spike RPS</td><td>160 × 2.5</td><td><strong>~400 req/s</strong></td></tr>
+<tr><td>App nodes (spike / node)</td><td>⌈400 / 250⌉ = 2, then N+1 redundancy + AZ spread</td><td><strong>4 nodes</strong> (2 needed, 2 headroom/HA)</td></tr>
+<tr><td>Node headroom at peak</td><td>240 / (4 × 250)</td><td><strong>24% utilized</strong> (76% headroom)</td></tr>
+<tr><td>PgBouncer server-side conns</td><td>4 nodes × 25 conns/node</td><td><strong>100 backend conns</strong> (Postgres <code>max_connections</code>=200; 50% headroom + superuser/replica reserve)</td></tr>
+<tr><td>PgBouncer client-side conns</td><td>4 nodes × 200 (app pool)</td><td><strong>~800 multiplexed</strong> onto 100 backend</td></tr>
+<tr><td>Redis ops/sec (peak)</td><td>240 req/s × ~5 ops/req (session GET/SET, rate-limit INCR, queue LPUSH/BRPOP, cache)</td><td><strong>~1,200 ops/s</strong> (< 2% of a single node's ~100k ops/s ceiling)</td></tr>
+<tr><td>Object-storage bandwidth (peak)</td><td>240 × 15% × 2 MB × 8 bits</td><td><strong>~576 Mbps</strong> (36 file ops/s); served via signed URLs so bytes bypass app nodes</td></tr>
+</tbody>
+</table>
+
+<p><strong>Narrative.</strong> At the 12% peak, the platform runs at ~240 req/s. A four-node app tier (two mathematically required, doubled for N+1 and multi-AZ availability, satisfying <code>CP-2</code>/<code>SC-6</code>) sits at only ~24% CPU, leaving room to absorb the ~400 req/s spike within a single tier and the 15%/3,000-session stress case with autoscaling. The database is the true bottleneck: with transaction-mode PgBouncer, 800 hot application connections collapse onto ~100 Postgres backends, keeping <code>max_connections</code> at a safe 200 with headroom for replicas and admin. Redis is effectively free at this scale — sized instead for durability (AOF everysec) and HA (Sentinel/Cluster) rather than throughput. Object-storage bytes never traverse the app tier because uploads/downloads use pre-signed URLs (<code>SC-8</code> in transit, virus-scan-on-write), so the ~576 Mbps of file traffic is absorbed by S3, not the compute layer.</p>
+
+<h4>3. Modeled Performance Results (per platform)</h4>
+
+<div class="callout"><strong>MODELED, not measured.</strong> Virtual-user counts express platform mix (Web ~50%, Android ~30%, iOS ~20% of the 2,400 peak sessions), scaled up for stress/spike. Latencies are projected from the per-request cost budget (API p95 targets in section 4) plus platform-specific client overhead (mobile radio wake, PWA service-worker cache). Numbers assume the four-node tier from section 2.</div>
+
+<h5>Web PWA (baseline ~1,200 peak VUs)</h5>
+<table>
+<thead><tr><th>Scenario</th><th>Virtual Users</th><th>Throughput (req/s)</th><th>p50</th><th>p95</th><th>p99</th><th>Error rate</th><th>Result vs SLO</th></tr></thead>
+<tbody>
+<tr><td>Load (steady)</td><td>1,200</td><td>140</td><td>90 ms</td><td>310 ms</td><td>520 ms</td><td>0.08%</td><td><strong>PASS</strong></td></tr>
+<tr><td>Stress (beyond peak)</td><td>2,400</td><td>245</td><td>160 ms</td><td>540 ms</td><td>1,150 ms</td><td>0.9%</td><td><strong>DEGRADED</strong> (p95 > 400ms; sheds via 429 — acceptable)</td></tr>
+<tr><td>Soak (8h)</td><td>1,000</td><td>120</td><td>95 ms</td><td>330 ms</td><td>560 ms</td><td>0.10%</td><td><strong>PASS</strong> (< 5% p95 drift, no leak)</td></tr>
+<tr><td>Spike (0→2.5×)</td><td>3,000 (30s ramp)</td><td>390</td><td>210 ms</td><td>780 ms</td><td>1,900 ms</td><td>1.6%</td><td><strong>DEGRADED</strong> (recovers < 60s post-autoscale)</td></tr>
+</tbody>
+</table>
+
+<h5>Android (baseline ~720 peak VUs)</h5>
+<table>
+<thead><tr><th>Scenario</th><th>Virtual Users</th><th>Throughput (req/s)</th><th>p50</th><th>p95</th><th>p99</th><th>Error rate</th><th>Result vs SLO</th></tr></thead>
+<tbody>
+<tr><td>Load (steady)</td><td>720</td><td>82</td><td>120 ms</td><td>360 ms</td><td>610 ms</td><td>0.12%</td><td><strong>PASS</strong></td></tr>
+<tr><td>Stress (beyond peak)</td><td>1,440</td><td>150</td><td>190 ms</td><td>590 ms</td><td>1,280 ms</td><td>1.1%</td><td><strong>DEGRADED</strong> (client retries with backoff)</td></tr>
+<tr><td>Soak (8h)</td><td>600</td><td>70</td><td>125 ms</td><td>375 ms</td><td>640 ms</td><td>0.14%</td><td><strong>PASS</strong> (offline queue flush stable)</td></tr>
+<tr><td>Spike (0→2.5×)</td><td>1,800 (30s ramp)</td><td>235</td><td>250 ms</td><td>860 ms</td><td>2,100 ms</td><td>1.9%</td><td><strong>DEGRADED</strong> (sync backpressure honored)</td></tr>
+</tbody>
+</table>
+
+<h5>iOS (baseline ~480 peak VUs)</h5>
+<table>
+<thead><tr><th>Scenario</th><th>Virtual Users</th><th>Throughput (req/s)</th><th>p50</th><th>p95</th><th>p99</th><th>Error rate</th><th>Result vs SLO</th></tr></thead>
+<tbody>
+<tr><td>Load (steady)</td><td>480</td><td>55</td><td>110 ms</td><td>350 ms</td><td>600 ms</td><td>0.10%</td><td><strong>PASS</strong></td></tr>
+<tr><td>Stress (beyond peak)</td><td>960</td><td>100</td><td>180 ms</td><td>570 ms</td><td>1,220 ms</td><td>1.0%</td><td><strong>DEGRADED</strong> (URLSession retry honored)</td></tr>
+<tr><td>Soak (8h)</td><td>400</td><td>46</td><td>115 ms</td><td>365 ms</td><td>620 ms</td><td>0.11%</td><td><strong>PASS</strong> (BGTaskScheduler sync stable)</td></tr>
+<tr><td>Spike (0→2.5×)</td><td>1,200 (30s ramp)</td><td>155</td><td>230 ms</td><td>820 ms</td><td>2,000 ms</td><td>1.7%</td><td><strong>DEGRADED</strong> (recovers post-autoscale)</td></tr>
+</tbody>
+</table>
+
+<h4>4. SLO / Pass-Fail Thresholds</h4>
+<table>
+<thead><tr><th>Metric</th><th>SLO / Threshold</th><th>Measurement window</th><th>Control</th></tr></thead>
+<tbody>
+<tr><td>Availability (monthly)</td><td>≥ <strong>99.9%</strong> (≤ 43m 12s downtime/month)</td><td>28-day rolling</td><td><code>CP-2</code>, <code>SC-6</code></td></tr>
+<tr><td>API latency — read (p95)</td><td>< <strong>400 ms</strong></td><td>5-min rolling at peak</td><td>SLO</td></tr>
+<tr><td>API latency — write (p95)</td><td>< <strong>800 ms</strong></td><td>5-min rolling at peak</td><td>SLO</td></tr>
+<tr><td>API latency (p99, any)</td><td>< <strong>1,500 ms</strong></td><td>5-min rolling at peak</td><td>SLO</td></tr>
+<tr><td>Error rate (5xx + non-4xx failures)</td><td>< <strong>0.5%</strong></td><td>5-min rolling</td><td><code>SI-2</code></td></tr>
+<tr><td>Throughput floor</td><td>≥ <strong>240 req/s</strong> at < SLO latency</td><td>load test</td><td>capacity model</td></tr>
+<tr><td>Soak p95 drift</td><td>< <strong>5%</strong> over 8h; zero unbounded memory/conn growth</td><td>8h soak</td><td><code>SI-13</code></td></tr>
+<tr><td>Graceful degradation</td><td>Beyond 1.5× peak, shed load via <strong>HTTP 429</strong>; no cascading failure</td><td>stress test</td><td><code>SC-5</code></td></tr>
+<tr><td>Error budget policy</td><td>0.1%/month; burn > 2× halts feature deploys until recovered</td><td>28-day</td><td>SRE policy</td></tr>
+</tbody>
+</table>
+
+<h4>5. Ready-to-Run Load Test Scripts</h4>
+
+<h5>(a) k6 — stage up to 20,000 VUs with SLO thresholds</h5>
+<pre><code>// praveno-load.js  —  run: k6 run --out experimental-prometheus-rw praveno-load.js
+import http from 'k6/http';
+import { check, sleep, group } from 'k6';
+import { Trend, Rate } from 'k6/metrics';
+
+const readLatency  = new Trend('read_latency', true);
+const writeLatency = new Trend('write_latency', true);
+const errors       = new Rate('business_errors');
+
+const BASE = __ENV.BASE_URL || 'https://staging.praveno.example';
+const TOKEN = __ENV.API_TOKEN;               // per-tenant JWT injected by CI secret
+
+export const options = {
+  // Reaching 20k VUs from one machine is not viable — see note (c).
+  scenarios: {
+    steady_peak: {
+      executor: 'ramping-vus', startVUs: 0, gracefulRampDown: '30s',
+      stages: [
+        { duration: '2m',  target: 2400 },   // ramp to 12% concurrency
+        { duration: '10m', target: 2400 },   // hold steady peak
+        { duration: '3m',  target: 6000 },   // STRESS: beyond peak
+        { duration: '2m',  target: 20000 },  // full-scale stress (distributed only)
+        { duration: '5m',  target: 20000 },
+        { duration: '3m',  target: 0 },
+      ],
+    },
+    spike: {
+      executor: 'ramping-vus', startTime: '25m', startVUs: 0,
+      stages: [ { duration: '30s', target: 6000 }, { duration: '2m', target: 6000 }, { duration: '30s', target: 0 } ],
+    },
+  },
+  thresholds: {
+    'read_latency{type:read}':   ['p(95)<400'],
+    'write_latency{type:write}': ['p(95)<800'],
+    'http_req_duration':         ['p(99)<1500'],
+    'business_errors':           ['rate<0.005'],
+    'http_req_failed':           ['rate<0.005'],
+  },
+};
+
+const headers = { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' };
+
+export default function () {
+  group('dashboard_read', () => {
+    const r = http.get(`${BASE}/api/v1/projects?stage=active`, { headers, tags: { type: 'read' } });
+    readLatency.add(r.timings.duration, { type: 'read' });
+    errors.add(!check(r, { 'dashboard 200': (x) => x.status === 200 }));
+  });
+  group('stage_transition_write', () => {
+    const body = JSON.stringify({ toState: 'in_review', comment: 'k6 transition' });
+    const r = http.post(`${BASE}/api/v1/tasks/${__VU % 500}/transition`, body, { headers, tags: { type: 'write' } });
+    writeLatency.add(r.timings.duration, { type: 'write' });
+    errors.add(!check(r, { 'transition 2xx': (x) => x.status >= 200 && x.status < 300 }));
+  });
+  sleep(Math.random() * 3 + 12);   // ~4 actions/user/min pacing
+}</code></pre>
+
+<h5>(b) Artillery — equivalent quick smoke/spike snippet</h5>
+<pre><code># praveno-artillery.yml  —  run: artillery run praveno-artillery.yml
+config:
+  target: "https://staging.praveno.example"
+  phases:
+    - { duration: 120, arrivalRate: 20, rampTo: 240, name: "ramp to peak req/s" }
+    - { duration: 600, arrivalRate: 240, name: "steady peak" }
+    - { duration: 60,  arrivalRate: 600, name: "spike" }
+  defaults:
+    headers:
+      Authorization: "Bearer {{ $processEnvironment.API_TOKEN }}"
+  ensure:
+    p95: 800
+    maxErrorRate: 0.5
+scenarios:
+  - name: "read-then-write workflow"
+    flow:
+      - get:  { url: "/api/v1/projects?stage=active", expect: [{ statusCode: 200 }] }
+      - think: 2
+      - post: { url: "/api/v1/tasks/{{ $randomNumber(1,500) }}/transition",
+                json: { toState: "in_review", comment: "artillery" },
+                expect: [{ statusCode: 200 }] }</code></pre>
+
+<h5>(c) Distributed load generation — how to actually reach 20,000 VUs</h5>
+<div class="callout warn">A single k6 or Artillery process cannot sustain 20,000 VUs — one machine tops out around 1,000–3,000 VUs before the <em>generator</em> (CPU, ephemeral ports, file descriptors) becomes the bottleneck and corrupts results. To reach true 20k you MUST distribute: run <strong>k6 Cloud</strong> (managed, geo-distributed) or the <strong>k6 Operator on Kubernetes</strong> (<code>parallelism: 20</code> shards × ~1,000 VUs each), or a fleet of Artillery/Locust workers behind a coordinator. Distribute generators across multiple regions to mirror the Web/Android/iOS geographic mix, raise <code>ulimit -n</code> to 250k+ and widen <code>net.ipv4.ip_local_port_range</code> on each agent, and aggregate metrics via Prometheus remote-write so per-shard results roll up into one SLO view. Always test against a <strong>production-parity</strong> staging tier (same node count, same PgBouncer/Postgres sizing) or the numbers are meaningless.</div>
+
+<h4>6. Resilience / Chaos Test Matrix</h4>
+<table>
+<thead><tr><th>Scenario</th><th>Injection method</th><th>Expected behavior</th><th>RTO</th><th>RPO</th><th>Control</th></tr></thead>
+<tbody>
+<tr><td>PostgreSQL primary failover</td><td>Kill primary pod / Patroni switchover; kill AZ</td><td>Standby promoted; PgBouncer reconnects; in-flight writes retried idempotently</td><td>≤ <strong>15 min</strong> (auto < 60s typical)</td><td>≤ <strong>5 min</strong> via streaming WAL (near-zero with sync replica)</td><td><code>CP-10</code></td></tr>
+<tr><td>Redis node loss</td><td>Kill master; Sentinel/Cluster failover</td><td>Replica promoted; sessions preserved (AOF everysec); queue jobs re-enqueued, none lost</td><td>≤ <strong>30 s</strong></td><td>≤ <strong>1 s</strong> (AOF everysec)</td><td><code>CP-10</code>, <code>SC-5</code></td></tr>
+<tr><td>Object storage 5xx / unavailable</td><td>Toxiproxy 500s on S3 endpoint</td><td>Uploads queued & retried with backoff; reads fail soft with cached thumb; user sees "processing", no data loss</td><td>≤ <strong>5 min</strong> (retry window)</td><td><strong>0</strong> (write buffered)</td><td><code>SI-13</code></td></tr>
+<tr><td>Worker queue backlog</td><td>Pause consumers / inject 10× job flood</td><td>Autoscale workers on queue depth; reminders/notifications delayed not dropped; visibility timeout prevents duplicates</td><td>≤ <strong>10 min</strong> drain</td><td><strong>0</strong> (durable queue)</td><td><code>CP-10</code></td></tr>
+<tr><td>Network partition (split-brain)</td><td>Toxiproxy/Chaos Mesh partition app↔DB and AZ↔AZ</td><td>Quorum-based leader election; minority side goes read-only, no split-brain writes; clients retry</td><td>≤ <strong>15 min</strong></td><td>≤ <strong>5 min</strong></td><td><code>SC-5</code>, <code>CP-2</code></td></tr>
+<tr><td>Backup / PITR restore</td><td>Restore last snapshot + WAL replay to staging (monthly drill)</td><td>Full DB reconstituted to chosen timestamp; row counts + checksums validated; app boots clean</td><td>≤ <strong>4 h</strong> (full DR rebuild)</td><td>≤ <strong>5 min</strong> (WAL)</td><td><code>CP-9</code>, <code>CP-10</code></td></tr>
+<tr><td>Mobile offline→online sync conflict</td><td>Edit same task offline on two devices; reconnect</td><td>Deterministic resolution: field-level Last-Write-Wins by server timestamp, vector-clock tie-break, conflict flagged in audit_log; both edits preserved (no silent loss); user notified of merge</td><td>≤ <strong>30 s</strong> converge on reconnect</td><td><strong>0</strong> (local WAL/outbox replays)</td><td><code>SI-13</code>, MASVS-STORAGE</td></tr>
+</tbody>
+</table>
+
+<h4>7. Functional Test Coverage Checklist (mapped to workflows)</h4>
+<table>
+<thead><tr><th>Workflow</th><th>Must-cover cases</th><th>Priority</th></tr></thead>
+<tbody>
+<tr><td>Project intake</td><td>Required-field validation, template instantiation, duplicate-guard, tenant isolation (record lands only in creator's org)</td><td>P0</td></tr>
+<tr><td>Stage transitions</td><td>Legal transitions per state machine; illegal transition rejected (409); audit_log entry written; concurrent-transition optimistic-lock conflict</td><td>P0</td></tr>
+<tr><td>Dependencies</td><td>Blocked task cannot start until predecessor done; cycle detection rejects circular deps; cascade on predecessor reopen</td><td>P0</td></tr>
+<tr><td>Approvals routing & RACI</td><td>Correct approver resolved from raci_assignments; sequential vs parallel routing; rejection returns to prior stage; delegate/escalation on timeout</td><td>P0</td></tr>
+<tr><td>Reminders & notifications</td><td>Due-date reminder fires once at offset; recurring project regenerates; fan-out to email/push; dedup on retry; timezone correctness</td><td>P1</td></tr>
+<tr><td>File upload limits</td><td>Max size enforced (e.g. 100 MB), MIME allowlist, virus-scan quarantine blocks download, signed-URL expiry, oversized rejected with clear error</td><td>P0</td></tr>
+<tr><td>Exports / reports</td><td>CSV/PDF export matches filtered view; row-level RBAC applied to export; large export streamed not OOM; scheduled report delivery</td><td>P1</td></tr>
+<tr><td>RBAC enforcement</td><td>Every role × endpoint matrix; cross-tenant access denied (403); privilege-escalation attempt blocked; GraphQL field-level authz; IDOR on task/attachment IDs</td><td>P0</td></tr>
+<tr><td>Offline sync</td><td>Create/edit offline → queued → replayed in order; conflict resolution (section 6) deterministic; partial-sync interruption resumes; no duplicate on retry</td><td>P0</td></tr>
+<tr><td>Comments & search</td><td>Comment threading, @mention notification, mention authz, full-text search scoped to tenant, deleted-item exclusion</td><td>P2</td></tr>
+</tbody>
+</table>
+
+<div class="callout ok"><strong>Authorization gate.</strong> This pillar is complete for RMF Step 5 (Assess) when: (1) all four layers meet exit criteria; (2) MODELED projections are replaced by measured distributed-load results meeting every section-4 SLO; (3) all section-6 scenarios pass within stated RTO/RPO with a monthly-drill record; (4) the ASVS v4.0.3 L2 and MASVS checklists are evidenced; and (5) no open Critical/High from <code>CA-8</code> pen testing or <code>RA-5</code> scans. Evidence packages feed the Authorizing Official's ATO decision (RMF Step 6).</div></section>
+<!--__GOV_PACKAGING__--><section class="gov-pane gov-body" data-gov="gov-packaging"><h3>Mobile & DevSecOps</h3>
+
+<p>This pillar defines how the single web build of the <strong>Praveno Platform</strong> is delivered to three targets — Web (PWA), Android, and iOS — from one codebase, how field users stay productive on degraded or absent connectivity, and how every artifact is proven secure before release. Design goal: <strong>write once, package thrice, sign everything, and preserve audit integrity even when the device is offline.</strong> Security controls trace to NIST SP 800-53 Rev 5 (families <code>SI</code>, <code>SC</code>, <code>SA</code>, <code>CM</code>, <code>AU</code>, <code>RA</code>), OWASP ASVS v4.0.3/v5.0, and OWASP MASVS for the packaged mobile apps.</p>
+
+<div class="callout"><strong>Single-source packaging model.</strong> The PoC produces one <code>dist/</code> web build. Android wraps it as a <em>Trusted Web Activity</em> (TWA) or a <em>Capacitor</em> WebView app; iOS wraps it as a <em>Capacitor / WKWebView</em> app. No forked UI code — only a thin native shell plus platform plugins for push, biometrics, and secure storage.</div>
+
+<h4>1. PWA foundation</h4>
+
+<h5>1.1 Web App Manifest</h5>
+<p>The manifest (<code>manifest.webmanifest</code>, linked from <code>index.html</code> via <code><link rel="manifest"></code>) makes the app installable, sets the standalone chrome-less shell, and supplies maskable icons required by both Android install banners and the TWA build. <code>id</code> is fixed so app identity survives <code>start_url</code> changes.</p>
+<pre><code>{
+  "id": "/",
+  "name": "Praveno Platform",
+  "short_name": "Praveno",
+  "description": "Repeatable business project workflows: intake, tasks, approvals, RACI.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "theme_color": "#0B3D5C",
+  "background_color": "#0B1622",
+  "lang": "en-US",
+  "dir": "ltr",
+  "categories": ["business", "productivity"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "New Intake", "url": "/intake/new" },
+    { "name": "My Tasks", "url": "/tasks?assignee=me" }
+  ],
+  "screenshots": [
+    { "src": "/screens/wide.png", "sizes": "1280x720", "type": "image/png", "form_factor": "wide" },
+    { "src": "/screens/narrow.png", "sizes": "540x960", "type": "image/png", "form_factor": "narrow" }
+  ]
+}</code></pre>
+<div class="callout"><strong>Icon minimums.</strong> A <code>512x512</code> icon and at least one <code>maskable</code> icon are mandatory for a clean Android install and for Bubblewrap/PWABuilder to generate adaptive launcher icons. <code>screenshots</code> with both form factors enable a richer install dialog and are required for Play Store listing assets.</div>
+
+<h5>1.2 Service worker caching strategy</h5>
+<p>Three layered strategies: <strong>(a) app-shell precache</strong> — the HTML/JS/CSS/icon core is cached on <code>install</code> so the app boots with zero network; <strong>(b) stale-while-revalidate for read data</strong> — GET responses for reference/list data are served instantly from cache while a background fetch refreshes the entry; <strong>(c) background sync for mutations</strong> — writes made offline (create task, approve, comment) are enqueued and replayed by the <code>sync</code> event once connectivity returns. Navigation requests fall back to a cached <code>offline.html</code> app shell. HTML is <em>network-first</em> to avoid serving a stale shell; static assets are <em>cache-first</em>.</p>
+<pre><code>const SHELL = 'praveno-shell-v7';
+const DATA  = 'praveno-data-v7';
+const SHELL_ASSETS = ['/', '/index.html', '/offline.html',
+  '/app.css', '/app.js', '/icons/icon-192.png', '/manifest.webmanifest'];
+
+self.addEventListener('install', (e) => {
+  e.waitUntil(caches.open(SHELL).then((c) => c.addAll(SHELL_ASSETS))
+    .then(() => self.skipWaiting()));
+});
+
+self.addEventListener('activate', (e) => {
+  e.waitUntil(caches.keys().then((keys) => Promise.all(
+    keys.filter((k) => ![SHELL, DATA].includes(k)).map((k) => caches.delete(k))
+  )).then(() => self.clients.claim()));
+});
+
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  if (request.method !== 'GET') return; // mutations go through Background Sync queue
+
+  const url = new URL(request.url);
+
+  if (request.mode === 'navigate') {            // network-first HTML, offline fallback
+    event.respondWith(fetch(request).catch(() => caches.match('/offline.html')));
+    return;
+  }
+  if (url.pathname.startsWith('/api/')) {       // stale-while-revalidate for data
+    event.respondWith(caches.open(DATA).then(async (cache) => {
+      const cached = await cache.match(request);
+      const network = fetch(request).then((res) => { cache.put(request, res.clone()); return res; })
+        .catch(() => cached);
+      return cached || network;
+    }));
+    return;
+  }
+  event.respondWith(caches.match(request).then((c) => c || fetch(request))); // cache-first assets
+});
+
+self.addEventListener('sync', (event) => {      // Background Sync: replay queued mutations
+  if (event.tag === 'praveno-outbox') event.waitUntil(replayOutbox());
+});</code></pre>
+
+<h5>1.3 Offline data (IndexedDB) & conflict resolution</h5>
+<p>Structured offline state lives in <strong>IndexedDB</strong> (via a thin wrapper such as <code>idb</code>): object stores for <code>tasks</code>, <code>projects</code>, <code>comments</code>, an append-only <code>outbox</code> of pending mutations, and a <code>meta</code> store holding the last <code>syncCursor</code>. Each record carries <code>{ id, rev, updatedAt, deleted }</code>. Conflict handling is chosen per entity class:</p>
+<table>
+  <thead><tr><th>Strategy</th><th>Where used</th><th>Behavior & trade-off</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Last-write-wins (LWW)</strong></td><td>Low-contention scalar fields (status, due date)</td><td>Highest <code>updatedAt</code> (server-authoritative timestamp) wins. Simple; risks silently discarding a concurrent edit.</td></tr>
+    <tr><td><strong>Per-field merge</strong></td><td>Task/project records with independent fields</td><td>Merge non-overlapping field changes; only truly-conflicting fields need resolution. Preserves more user intent than record-level LWW.</td></tr>
+    <tr><td><strong>Version vector</strong></td><td>Approvals, checklists, RACI (multi-actor)</td><td>Detects genuine concurrency (neither vector dominates) and surfaces a conflict for user/rule resolution instead of guessing. Higher metadata cost.</td></tr>
+    <tr><td><strong>Tombstones</strong></td><td>All deletes</td><td>Deletes stored as <code>deleted:true</code> records, not physical removal, so a delete propagates and a stale offline client cannot "resurrect" a removed row. Tombstones are garbage-collected after the retention window.</td></tr>
+  </tbody>
+</table>
+<div class="callout warn"><strong>Never trust the client clock for ordering.</strong> LWW uses the <em>server</em>-assigned <code>updatedAt</code>. The client's local timestamp is advisory only; the server re-stamps on ingest (see §4) to keep audit ordering and <code>AU-8</code> time-stamp integrity correct.</div>
+
+<h4>2. Android packaging</h4>
+<p>Two supported paths. Choose <strong>TWA</strong> for a thin, Chrome-rendered install when the PWA already covers the feature set; choose <strong>Capacitor</strong> when you need first-class native plugins (push, biometric unlock, hardware-backed secure storage) beyond what the web platform exposes on Android.</p>
+
+<h5>2.1 Path A — Trusted Web Activity (Bubblewrap / PWABuilder)</h5>
+<p>A TWA runs the PWA full-screen with no browser UI, but only if <strong>Digital Asset Links</strong> verify that the app and the origin belong to the same owner. Publish <code>/.well-known/assetlinks.json</code> on the production origin before building.</p>
+<pre><code>[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.praveno.app",
+    "sha256_cert_fingerprints": ["AB:CD:...:EF"]
+  }
+}]</code></pre>
+<ol>
+  <li>Host <code>manifest.webmanifest</code> and a valid HTTPS PWA at <code>https://app.praveno.com</code>.</li>
+  <li><code>npm i -g @bubblewrap/cli</code>, then <code>bubblewrap init --manifest https://app.praveno.com/manifest.webmanifest</code>.</li>
+  <li><code>bubblewrap build</code> to produce a signed <code>app-release-bundle.aab</code> (and a debug APK); record the signing key <strong>SHA-256 fingerprint</strong>.</li>
+  <li>Paste that fingerprint into <code>assetlinks.json</code> and deploy it to <code>/.well-known/</code> on the origin.</li>
+  <li>Verify with <code>bubblewrap validate</code> (or Google's Statement List Tester) — a failed link makes the TWA fall back to a browser bar.</li>
+  <li>Upload the <code>.aab</code> to Play Console, complete the <strong>Data Safety</strong> form, and submit for review.</li>
+</ol>
+<pre><code># Bubblewrap
+npm i -g @bubblewrap/cli
+bubblewrap init --manifest https://app.praveno.com/manifest.webmanifest
+bubblewrap build          # -> app-release-bundle.aab (signed)
+bubblewrap validate       # confirms Digital Asset Links</code></pre>
+
+<h5>2.2 Path B — Capacitor (native shell around the same web build)</h5>
+<p>Capacitor copies the exact <code>dist/</code> into a native Android project and exposes native APIs through plugins. Use <code>@capacitor/push-notifications</code> (FCM), a biometric plugin for local unlock, and <code>@capacitor/preferences</code>/secure-storage backed by the Android Keystore.</p>
+<pre><code># Capacitor (shared for Android + iOS)
+npm i @capacitor/core @capacitor/cli
+npx cap init "Praveno" com.praveno.app --web-dir=dist
+npm i @capacitor/android @capacitor/push-notifications
+npx cap add android
+npm run build && npx cap copy android   # push the latest web build in
+npx cap sync android                    # sync plugins + native deps
+npx cap open android                    # build/sign the .aab in Android Studio</code></pre>
+<div class="callout"><strong>Play Store requirements.</strong> Both paths require a completed <strong>Data Safety</strong> form (declare data collected, sharing, encryption in transit, and deletion path), a target API level meeting the current Play requirement, and app signing via Play App Signing. Data Safety declarations must match the actual runtime behavior — mismatches are a common review rejection.</div>
+
+<h4>3. iOS packaging</h4>
+<p>iOS has <strong>no TWA equivalent</strong>: Safari can install a PWA to the Home Screen, but a pure PWA cannot receive server push without a native APNs registration path, has tighter storage-eviction rules, and gives up native store distribution. Therefore iOS ships via <strong>Capacitor over WKWebView</strong>, wrapping the identical web build.</p>
+<pre><code># iOS via Capacitor (CocoaPods required)
+npm i @capacitor/ios
+npx cap add ios
+npm run build && npx cap copy ios
+npx cap sync ios
+npx cap open ios          # opens Xcode: set Team, Bundle ID, signing, capabilities</code></pre>
+<ul>
+  <li><strong>Signing & review.</strong> In Xcode set the Apple Developer <em>Team</em>, bundle id <code>com.praveno.app</code>, and enable <em>Push Notifications</em> + <em>Background Modes</em> capabilities. Archive, upload to App Store Connect, and submit. Reviewers apply Guideline 4.2 (minimum functionality) — a shell that is only a wrapped website risks rejection, so native push, biometrics, and offline behavior are what justify the app.</li>
+  <li><strong>Push via APNs.</strong> Web-push is unavailable through the wrapper; use <code>@capacitor/push-notifications</code> registering device tokens with <strong>APNs</strong>, fanned out server-side through Redis notification queues.</li>
+  <li><strong>Keychain for secrets.</strong> Tokens and refresh secrets live in the <strong>iOS Keychain</strong> (hardware-backed, Secure Enclave where available) via a secure-storage plugin — never in <code>localStorage</code> or WebView cookies. Aligns with MASVS-STORAGE.</li>
+  <li><strong>App Transport Security (ATS).</strong> Leave ATS enabled (TLS 1.2+, no arbitrary cleartext exceptions) in <code>Info.plist</code>; any exception must be justified in review. Supports SC-8 / SC-13 (transmission confidentiality).</li>
+</ul>
+
+<h4>4. Low-connectivity & field-user support</h4>
+<p>Field users at customer sites, warehouses and remote job sites often operate on intermittent or metered links. The client is built <strong>offline-first</strong>, and the server remains the sole authority for identity, ordering, and audit truth.</p>
+<table>
+  <thead><tr><th>Mechanism</th><th>Design</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Request queueing</strong></td><td>Mutations append to the IndexedDB <code>outbox</code> with a client-generated idempotency key (UUID). A Background Sync <code>replayOutbox()</code> drains them in order; the server dedupes on the key so a retry never double-applies.</td></tr>
+    <tr><td><strong>Exponential backoff</strong></td><td>Failed replays retry with backoff + jitter (e.g. 1s, 2s, 4s, 8s… capped ~5 min) to avoid thundering-herd on reconnect. Persistent 4xx (validation) fail fast to a conflict queue; 5xx/network errors keep retrying.</td></tr>
+    <tr><td><strong>Delta sync</strong></td><td>Reads pull only records changed since the stored <code>syncCursor</code> (server change-token / <code>updated_since</code>), not full tables — minimizing bytes on metered connections. Cursor advances only after a fully persisted batch.</td></tr>
+    <tr><td><strong>Cache-size limits</strong></td><td>Data cache and IndexedDB are bounded (LRU eviction, per-store quotas, attachment cache capped e.g. 50 MB). The app checks <code>navigator.storage.estimate()</code> and requests persistent storage to resist eviction; large attachments stream via signed URLs rather than being fully cached.</td></tr>
+    <tr><td><strong>Offline audit integrity</strong></td><td>Client records an audit <em>event</em> locally (actor, action, client-time, idempotency key) but it is <strong>provisional</strong>. On sync the server <em>re-validates authorization, assigns the authoritative <code>event_id</code> and server timestamp, and appends to the immutable <code>audit_logs</code></strong>. The client clock is never the system of record.</td></tr>
+  </tbody>
+</table>
+<div class="callout ok"><strong>Audit chain of custody.</strong> Because the server re-validates and re-timestamps every offline event (NIST <code>AU-8</code> time stamps, <code>AU-9</code> protection of audit information, <code>AU-10</code> non-repudiation), an offline device cannot forge order, backdate, or bypass authorization. Idempotency keys give exactly-once semantics under retry.</div>
+
+<h4>5. Secure CI/CD (DevSecOps) pipeline</h4>
+<p>Every merge and release passes automated security gates before an artifact is signed. Gates map to NIST <code>SA-11</code> (developer testing), <code>SA-15</code> (development process/tools), <code>RA-5</code> (vulnerability monitoring & scanning), <code>SI-2</code> (flaw remediation), and <code>CM-14</code> (signed components). A failing required gate blocks the pipeline.</p>
+<table>
+  <thead><tr><th>Stage</th><th>Gate</th><th>Tooling</th></tr></thead>
+  <tbody>
+    <tr><td>Pre-commit / pre-push</td><td>No secrets or high-entropy keys committed (blocking)</td><td><code>gitleaks</code>, <code>pre-commit</code> hooks, <code>detect-secrets</code></td></tr>
+    <tr><td>SAST (static analysis)</td><td>No new high/critical code weaknesses (blocking)</td><td><code>Semgrep</code>, GitHub <code>CodeQL</code></td></tr>
+    <tr><td>Dependency / SCA</td><td>No known-vulnerable or disallowed-license deps (blocking on critical)</td><td>OWASP <code>Dependency-Check</code>, <code>npm audit</code>, <code>Snyk</code></td></tr>
+    <tr><td>IaC scan</td><td>No insecure Terraform/K8s config (blocking on high)</td><td><code>tfsec</code>, <code>checkov</code></td></tr>
+    <tr><td>Container scan</td><td>No critical CVEs / no root, minimal base image (blocking)</td><td><code>Trivy</code>, <code>grype</code></td></tr>
+    <tr><td>DAST (running app)</td><td>No high-severity runtime findings against staging (blocking on high)</td><td>OWASP <code>ZAP</code> baseline/full scan</td></tr>
+    <tr><td>Artifact signing + SBOM</td><td>Every image/bundle signed; SBOM generated & attached (blocking)</td><td><code>cosign</code> (Sigstore), CycloneDX (<code>cyclonedx-npm</code>), <code>syft</code></td></tr>
+    <tr><td>Manual — code review</td><td>≥1 approving reviewer, no unresolved threads (blocking)</td><td>Branch protection / required PR review (CODEOWNERS)</td></tr>
+    <tr><td>Manual — penetration test</td><td>External pen test signed off before each major release (release gate)</td><td>Third-party pen test; findings tracked to closure (<code>CA-8</code>)</td></tr>
+  </tbody>
+</table>
+<p>ASVS coverage anchors: the pipeline enforces V1 (architecture/SDLC), V6 (stored cryptography) via secret handling, V14 (configuration) via IaC/container scanning; the packaged apps are additionally assessed against OWASP <strong>MASVS</strong> (MASVS-STORAGE, MASVS-CRYPTO, MASVS-AUTH, MASVS-NETWORK). SAST/SCA/DAST evidence is retained as the auditable body of <code>SA-11</code> developer testing.</p>
+<div class="callout"><strong>Vulnerability disclosure.</strong> Publish a machine-readable <code>/.well-known/security.txt</code> (RFC 9116) with <code>Contact</code>, <code>Policy</code>, <code>Encryption</code>, and <code>Expires</code> fields, plus a coordinated <strong>Vulnerability Disclosure Policy</strong> defining scope, safe-harbor, and remediation SLAs. Supports NIST <code>RA-5</code> and <code>SI-5</code> (security alerts & advisories).</div>
+<pre><code># /.well-known/security.txt  (RFC 9116)
+Contact: mailto:security@praveno.com
+Policy: https://praveno.com/security/vdp
+Encryption: https://praveno.com/.well-known/pgp-key.txt
+Preferred-Languages: en
+Expires: 2027-01-01T00:00:00Z</code></pre>
+
+<h4>6. Packaging deliverables (PoC output)</h4>
+<p>The proof-of-concept emits exactly these files, all self-contained so the same build drives all three platforms. FIPS 199 categorization for the platform is <em>Confidentiality: Moderate, Integrity: Moderate, Availability: Moderate</em> — the packaging/signing controls above satisfy the SC/SI/CM safeguards that categorization implies.</p>
+<table>
+  <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>index.html</code></td><td>App entry / shell; links the manifest and registers the service worker.</td></tr>
+    <tr><td><code>manifest.webmanifest</code></td><td>Installability, standalone display, theme/background colors, icons (§1.1).</td></tr>
+    <tr><td><code>service-worker.js</code></td><td>App-shell precache, stale-while-revalidate data cache, background-sync outbox (§1.2).</td></tr>
+    <tr><td><code>assetlinks.json</code></td><td>Digital Asset Links proving origin↔Android-app ownership for the TWA (§2.1).</td></tr>
+    <tr><td><code>capacitor.config.ts</code></td><td>Capacitor app id, name, <code>webDir: dist</code>, and plugin config for Android + iOS (§2.2/§3).</td></tr>
+    <tr><td><code>icons/</code></td><td><code>192</code>/<code>512</code> plus <code>maskable</code> PNGs for install banners and native launcher icons.</td></tr>
+    <tr><td><code>offline.html</code>, <code>security.txt</code></td><td>Offline navigation fallback and the RFC 9116 disclosure file.</td></tr>
+  </tbody>
+</table>
+<h5>Reviewing all three platforms in a browser</h5>
+<ol>
+  <li><strong>Serve the build over HTTPS</strong> (or <code>localhost</code>, which counts as a secure context) so the service worker and manifest activate.</li>
+  <li><strong>Web / PWA:</strong> open Chrome DevTools → <em>Application</em> tab → verify Manifest (name, icons, standalone), Service Workers (activated, background sync registered), and IndexedDB stores; use the install prompt to confirm the standalone window.</li>
+  <li><strong>Android emulation:</strong> DevTools device toolbar (portrait phone) validates responsive/offline behavior; toggle <em>Offline</em> to confirm the app shell loads and queued mutations flush on reconnect. The same URL is what Bubblewrap/PWABuilder wraps into the <code>.aab</code>.</li>
+  <li><strong>iOS emulation:</strong> DevTools iPhone preset checks WKWebView-sized layout and safe-area insets; the identical build is what Capacitor copies into the Xcode/WKWebView project.</li>
+  <li><strong>Lighthouse PWA audit</strong> confirms installability, offline readiness, and manifest completeness in one pass — a green PWA audit is the go/no-go gate before native wrapping.</li>
+</ol>
+<div class="callout ok"><strong>One build, verified once, packaged everywhere.</strong> Because Android (TWA/Capacitor) and iOS (Capacitor) both wrap the same audited <code>dist/</code>, a passing browser + Lighthouse review plus the DevSecOps gates in §5 gives high confidence that all three platforms ship the same secure, offline-capable experience.</div></section>
+</div>
+
+<script>
+/* =========================================================================
+   Praveno Platform — PoC single-file app.  Vanilla JS, no dependencies.
+   State persists to localStorage. RBAC + audit + approvals + templates.
+   ========================================================================= */
+"use strict";
+const LS_KEY="praveno_db_v1";
+const STAGES=[
+  {id:"Not Started",cls:"s-ns",ic:"○"},
+  {id:"In Progress",cls:"s-ip",ic:"◐"},
+  {id:"Blocked",cls:"s-bl",ic:"⚠"},
+  {id:"In Review",cls:"s-rv",ic:"审"},
+  {id:"Complete",cls:"s-cp",ic:"✔"}
+];
+const ROLE_PERMS={
+  Owner:{all:true},
+  Manager:{create:true,edit:true,approve:true,move:true,template:true,export:true,manageTeam:true},
+  Member:{create:true,edit:true,move:true,export:true},
+  Approver:{approve:true,export:true},
+  Viewer:{}
+};
+let DB=null, SESSION=null, VIEW="dashboard", GOVTAB="gov-architecture", idleTimer=null;
+
+/* ---------------- seed data ---------------- */
+function seed(){
+  const team=[
+    {id:"u1",name:"Goke Thompson",role:"Program Director",email:"goke_t@outlook.com",access:"Admin",avail:"Full",appRole:"Owner"},
+    {id:"u2",name:"A. Rivera",role:"Project Manager",email:"a.rivera@praveno.example",access:"Elevated",avail:"Full",appRole:"Manager"},
+    {id:"u3",name:"M. Chen",role:"IT & Security Lead",email:"m.chen@praveno.example",access:"Elevated",avail:"Full",appRole:"Manager"},
+    {id:"u4",name:"S. Okafor",role:"Operations Coordinator",email:"s.okafor@praveno.example",access:"Standard",avail:"Full",appRole:"Member"},
+    {id:"u5",name:"J. Patel",role:"Marketing Lead",email:"j.patel@praveno.example",access:"Standard",avail:"Partial",appRole:"Member"},
+    {id:"u6",name:"L. Nguyen",role:"Business Analyst",email:"l.nguyen@praveno.example",access:"Standard",avail:"Full",appRole:"Member"},
+    {id:"u7",name:"D. Brooks",role:"Finance Director / Approver",email:"d.brooks@praveno.example",access:"Elevated",avail:"Partial",appRole:"Approver"},
+    {id:"u8",name:"K. Adams",role:"Field Coordinator",email:"k.adams@praveno.example",access:"Standard",avail:"Full",appRole:"Member"}
+  ];
+  const today=Date.parse("2026-07-02T00:00:00Z");
+  const D=(off)=>new Date(today+off*86400000).toISOString().slice(0,10);
+  const tasks=[
+    mk("T-001","Client onboarding — Acme Retail Group","Client Onboarding","Complete discovery, account setup and kickoff checklist for the new client.","In Progress",65,"u4",["u8"],"Sprint 4",D(-6),D(3),false,[],"Confidential"),
+    mk("T-002","Security & compliance review (NIST RMF)","IT & Security","Assemble the security plan, assessment evidence and remediation list for sign-off.","In Review",90,"u3",["u2"],"Sprint 4",D(-14),D(1),true,[],"Restricted"),
+    mk("T-003","Website & campaign launch runbook","Marketing","Step-by-step launch plan incl. rollback and customer comms.","Not Started",0,"u5",[],"Sprint 5",D(2),D(16),false,["T-001"],"Internal"),
+    mk("T-004","Executive steering brief","Operations","Leadership summary for the July steering review.","Complete",100,"u2",["u6"],"Sprint 3",D(-20),D(-8),false,[],"Internal"),
+    mk("T-005","Vendor contract — fulfilment partner","Procurement","Negotiate SOW and rates; awaiting vendor redlines.","Blocked",30,"u6",[],"Sprint 4",D(-9),D(-2),false,["T-002"],"Confidential"),
+    mk("T-006","New-hire onboarding — 3 roles","Operations","Provision accounts, equipment and training for incoming staff.","Not Started",0,"u8",["u5"],"Sprint 6",D(10),D(24),false,["T-003"],"Internal"),
+    mk("T-007","RACI baseline sign-off","Operations","Confirm R/A/C/I across all workstreams.","Complete",100,"u2",["u7"],"Sprint 2",D(-30),D(-21),false,[],"Internal"),
+    mk("T-008","Risk register review","Operations","Quarterly risk review; update likelihood/impact.","In Progress",40,"u2",["u3","u6"],"Sprint 5",D(-3),D(7),false,[],"Internal"),
+    mk("T-009","Vendor SLA compliance check","Procurement","Validate vendor service levels vs. Q2 actuals.","Not Started",0,"u6",[],"Sprint 5",D(4),D(11),false,["T-005"],"Internal"),
+    mk("T-010","Customer feedback survey design","Marketing","Draft and pilot the post-launch satisfaction survey.","In Progress",20,"u4",["u6"],"Sprint 6",D(-1),D(18),false,[],"Public"),
+    mk("T-011","Change request — access controls","IT & Security","Tighten role permissions on the finance shared drive.","In Review",75,"u3",["u5"],"Sprint 5",D(-4),D(2),false,[],"Restricted"),
+    mk("T-012","Launch readiness review (Go/No-Go)","Operations","Cross-team readiness check ahead of the go-live date.","Not Started",0,"u2",["u7","u3"],"Sprint 6",D(12),D(21),false,["T-006","T-009"],"Internal")
+  ];
+  function mk(id,title,stream,desc,status,pct,owner,collab,sprint,start,due,needsApproval,deps,clr){
+    return {id,title,stream,desc,status,pct,owner,collaborators:collab,sprint,start,due,
+      needsApproval,approvalStatus:needsApproval?(status==="In Review"?"Pending":"None"):"None",deps,sensitivity:clr,
+      checklist:[],files:[],comments:[],createdBy:"u1",createdAt:D(-30)};
+  }
+  const templates=[
+    {id:"tpl1",name:"Client Onboarding",icon:"🤝",desc:"Repeatable workflow to take a new client from intake to first delivery.",
+      tasks:[["Intake & discovery call","Client Onboarding",2],["Scope & proposal sign-off","Client Onboarding",5],["Contract & billing setup","Finance",8],["Kickoff & account setup","Operations",10],["First deliverable review","Operations",15],["30-day check-in","Client Onboarding",30]]},
+    {id:"tpl2",name:"Security & Compliance (NIST RMF)",icon:"🛡️",desc:"NIST 800-37 risk-management workflow, one task per RMF step.",
+      tasks:[["Prepare — context & roles","IT & Security",3],["Categorize (FIPS 199)","IT & Security",6],["Select 800-53 controls","IT & Security",9],["Implement controls","IT & Security",20],["Assess (SAR)","IT & Security",27],["Authorize","Operations",30],["Monitor (ConMon)","IT & Security",45]]},
+    {id:"tpl3",name:"Change Request Workflow",icon:"🔧",desc:"Intake → impact review → approval → implement → verify.",
+      tasks:[["Submit change request","Operations",1],["Impact & risk assessment","IT & Security",3],["Approval board review","Operations",5],["Implement change","IT & Security",8],["Post-implementation review","Operations",10]]}
+  ];
+  const raci=[
+    {act:"Project intake & scoping",Team:"R",Customer:"A",Vendor:"I"},
+    {act:"Requirements gathering",Team:"R",Customer:"C",Vendor:"I"},
+    {act:"Budget & contract approval",Team:"C",Customer:"A",Vendor:"I"},
+    {act:"Vendor selection",Team:"R",Customer:"C",Vendor:"C"},
+    {act:"Security & compliance review",Team:"R",Customer:"A",Vendor:"I"},
+    {act:"Implementation & delivery",Team:"C",Customer:"I",Vendor:"R"},
+    {act:"Quality review & acceptance",Team:"R",Customer:"A",Vendor:"C"},
+    {act:"Closeout & reporting",Team:"R",Customer:"I",Vendor:"I"}
+  ];
+  const milestones=[
+    {name:"Project kickoff",date:D(-35),owner:"u1",status:"Complete"},
+    {name:"Plan baseline approved",date:D(-10),owner:"u2",status:"Complete"},
+    {name:"Compliance sign-off",date:D(6),owner:"u3",status:"At Risk"},
+    {name:"Go-live",date:D(28),owner:"u2",status:"On Track"}
+  ];
+  return {org:"Praveno Business Solutions",team,tasks,templates,raci,milestones,
+    audit:[{ts:new Date(today-3600000).toISOString(),user:"System",action:"seed",entity:"workspace",detail:"Demo workspace initialised."}],
+    notifications:[],files:[
+      {id:"f1",name:"Onboarding_Checklist.pdf",size:2411520,type:"application/pdf",task:"T-001",scan:"clean",by:"u4",at:D(-5)},
+      {id:"f2",name:"Compliance_Evidence.docx",size:844800,type:"application/vnd.openxmlformats",task:"T-002",scan:"clean",by:"u3",at:D(-6)},
+      {id:"f3",name:"Launch_Runbook.xlsx",size:512000,type:"application/vnd.ms-excel",task:"T-003",scan:"scanning",by:"u5",at:D(-1)}
+    ],seq:12};
+}
+
+/* ---------------- persistence ---------------- */
+function load(){try{const r=localStorage.getItem(LS_KEY);if(r)return JSON.parse(r);}catch(e){}const s=seed();try{localStorage.setItem(LS_KEY,JSON.stringify(s));}catch(e){}return s;}
+function save(){try{localStorage.setItem(LS_KEY,JSON.stringify(DB));}catch(e){toast("Storage full — export your data","err");}}
+function resetDemo(){if(confirm("Reset the PoC to seed data? This clears local changes.")){DB=seed();save();toast("Demo data reset","ok");render();}}
+
+/* ---------------- helpers ---------------- */
+const $=(s,r=document)=>r.querySelector(s);
+const esc=(s)=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const user=(id)=>DB.team.find(u=>u.id===id)||{name:"—",role:"",email:""};
+const initials=(n)=>{const p=(n||"").trim().split(/\s+/).filter(Boolean);return p.map(w=>w[0]).join("").slice(0,2).toUpperCase()||"?";};
+const TODAY=Date.parse("2026-07-02T00:00:00Z");
+function daysLate(t){if(t.status==="Complete")return 0;const due=Date.parse(t.due);return due<TODAY?Math.round((TODAY-due)/86400000):0;}
+const isLate=(t)=>daysLate(t)>0;
+function stageOf(id){return STAGES.find(s=>s.id===id)||STAGES[0];}
+function can(p){if(!SESSION)return false;const r=ROLE_PERMS[SESSION.role]||{};return !!(r.all||r[p]);}
+function toast(msg,kind){const el=document.createElement("div");el.className="toast"+(kind?" "+kind:"");el.textContent=msg;
+  $("#toasts").appendChild(el);setTimeout(()=>{el.style.opacity="0";el.style.transition=".4s";setTimeout(()=>el.remove(),400);},2600);}
+function audit(action,entity,detail){DB.audit.unshift({ts:new Date().toISOString(),user:SESSION?user(SESSION.uid).name:"?",action,entity,detail});if(DB.audit.length>400)DB.audit.pop();save();}
+function notify(text,taskId){DB.notifications.unshift({id:"n"+DB.seq++,text,taskId,ts:new Date().toISOString(),read:false});save();}
+function fmtBytes(b){if(b<1024)return b+" B";if(b<1048576)return(b/1024).toFixed(0)+" KB";return(b/1048576).toFixed(1)+" MB";}
+function reminders(){return DB.tasks.filter(t=>t.status!=="Complete").map(t=>({t,d:daysLate(t),due:Date.parse(t.due)}))
+  .filter(x=>x.d>0||(x.due-TODAY)/86400000<=3).sort((a,b)=>a.due-b.due);}
+function pendingApprovals(){return DB.tasks.filter(t=>t.approvalStatus==="Pending");}
+
+/* ---------------- auth / session ---------------- */
+function doLogin(){
+  const email=$("#li-email").value.trim(),role=$("#li-role").value,mfa=$("#li-mfa").checked;
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){$("#li-err").textContent="Enter a valid work email.";return;}
+  if(!$("#li-pass").value){$("#li-err").textContent="Password required.";return;}
+  const proceed=()=>{
+    const u=DB.team.find(x=>x.email.toLowerCase()===email.toLowerCase())||DB.team[0];
+    SESSION={uid:u.id,role,name:u.name,loginAt:Date.now()};
+    audit("login","session",u.name+" signed in as "+role+(mfa?" (MFA verified)":""));
+    $("#login").classList.add("hidden");$("#app").classList.remove("hidden");
+    buildNav();resetIdle();render();toast("Signed in as "+role,"ok");
+  };
+  if(mfa){
+    const code=String(((Date.now()%9000)+1000)|0).slice(0,6);
+    const entered=prompt("A one-time verification code was sent to your device (MFA simulation).\n\nDemo code: "+code+"\n\nEnter the code to continue:");
+    if(entered!==code){$("#li-err").textContent="MFA code did not match. Try again.";return;}
+  }
+  proceed();
+}
+function logout(){if(SESSION)audit("logout","session","Signed out");SESSION=null;clearTimeout(idleTimer);
+  $("#app").classList.add("hidden");$("#login").classList.remove("hidden");}
+function resetIdle(){clearTimeout(idleTimer);idleTimer=setTimeout(()=>{if(SESSION){toast("Session timed out (15 min idle)","err");logout();}},15*60*1000);}
+["click","keydown","touchstart"].forEach(ev=>document.addEventListener(ev,()=>{if(SESSION)resetIdle();},{passive:true}));
+
+/* ---------------- navigation ---------------- */
+const NAV=[
+  {g:"Workspace",items:[
+    {id:"dashboard",ic:"📊",t:"Dashboard"},
+    {id:"board",ic:"🗂️",t:"Board"},
+    {id:"tasks",ic:"✅",t:"Tasks"},
+    {id:"intake",ic:"➕",t:"Intake"},
+    {id:"approvals",ic:"🔖",t:"Approvals"},
+    {id:"templates",ic:"♻️",t:"Templates"}
+  ]},
+  {g:"People & Records",items:[
+    {id:"team",ic:"👥",t:"Team & RACI"},
+    {id:"files",ic:"📎",t:"Files"},
+    {id:"reminders",ic:"🔔",t:"Reminders"},
+    {id:"reports",ic:"📈",t:"Reports"},
+    {id:"audit",ic:"📜",t:"Audit Log"}
+  ]},
+  {g:"Governance",items:[
+    {id:"process",ic:"🔀",t:"Process Flow"},
+    {id:"governance",ic:"🏛️",t:"Architecture & Security"},
+    {id:"settings",ic:"⚙️",t:"Settings"}
+  ]}
+];
+function buildNav(){
+  let h="";
+  NAV.forEach(sec=>{h+=`<div class="nav-h">${sec.g}</div>`;
+    sec.items.forEach(it=>{h+=`<a data-v="${it.id}" onclick="go('${it.id}')"><span class="ic">${it.ic}</span><span>${it.t}</span><span class="badge-slot" data-badge="${it.id}"></span></a>`;});});
+  $("#nav").innerHTML=h;
+  const bn=[["dashboard","📊","Home"],["board","🗂️","Board"],["approvals","🔖","Approve"],["reminders","🔔","Alerts"],["governance","🏛️","Gov"]];
+  $("#botnav").innerHTML=bn.map(b=>`<a data-v="${b[0]}" onclick="go('${b[0]}')"><span>${b[1]}</span><span>${b[2]}</span></a>`).join("");
+}
+function updateBadges(){
+  const ap=pendingApprovals().length, rm=reminders().length, un=DB.notifications.filter(n=>!n.read).length;
+  document.querySelectorAll('[data-badge]').forEach(s=>{const v=s.getAttribute("data-badge");let n=0,cls="";
+    if(v==="approvals"){n=ap;}else if(v==="reminders"){n=rm;}
+    s.innerHTML=n>0?`<span class="badge${v==='reminders'?' blue':''}">${n}</span>`:"";});
+}
+function go(v){VIEW=v;toggleSide(false);render();}
+function toggleSide(force){const s=$("#side"),sc=$("#scrim");const open=force===undefined?!s.classList.contains("open"):force;
+  s.classList.toggle("open",open);sc.classList.toggle("show",open);}
+
+/* ---------------- render router ---------------- */
+function render(){
+  if(!SESSION)return;
+  const me=user(SESSION.uid);
+  $("#me-name").textContent=me.name;$("#me-role").textContent=SESSION.role;$("#me-av").textContent=initials(me.name);
+  $("#org-name").textContent=DB.org;
+  document.querySelectorAll("[data-v]").forEach(a=>a.classList.toggle("active",a.getAttribute("data-v")===VIEW));
+  const titleMap={dashboard:"Dashboard",board:"Workflow Board",tasks:"Tasks",intake:"Project & Task Intake",approvals:"Approvals Queue",
+    templates:"Reusable Templates",team:"Team & RACI Matrix",files:"Files & Attachments",reminders:"Reminders & Notifications",
+    reports:"Reports & Export",audit:"Audit Log",process:"Workflow Process Flow",governance:"Architecture, Security & Testing",settings:"Settings"};
+  $("#view-title").textContent=titleMap[VIEW]||"Praveno";
+  const R={dashboard:vDashboard,board:vBoard,tasks:vTasks,intake:vIntake,approvals:vApprovals,templates:vTemplates,
+    team:vTeam,files:vFiles,reminders:vReminders,reports:vReports,audit:vAudit,process:vProcess,governance:vGovernance,settings:vSettings};
+  $("#main").innerHTML=(R[VIEW]||vDashboard)();
+  updateBadges();
+  if(VIEW==="board")wireBoard();
+  window.scrollTo(0,0);
+}
+
+/* ---------------- views ---------------- */
+function vDashboard(){
+  const t=DB.tasks,total=t.length,done=t.filter(x=>x.status==="Complete").length,
+    late=t.filter(isLate).length,totLate=t.reduce((a,x)=>a+daysLate(x),0),
+    pct=total?Math.round(done/total*100):0,openA=pendingApprovals().length;
+  const byStage=STAGES.map(s=>({s,n:t.filter(x=>x.status===s.id).length}));
+  const byStream={};t.forEach(x=>{byStream[x.stream]=(byStream[x.stream]||0)+1;});
+  const maxStream=Math.max(1,...Object.values(byStream));
+  const kpis=[
+    ["Total Tasks",total,"across "+new Set(t.map(x=>x.stream)).size+" workstreams"],
+    ["% Complete",pct+"%",done+" of "+total+" done"],
+    ["Open Tasks",total-done,openA+" awaiting approval"],
+    ["Tasks Late",late,totLate+" total days late"],
+    ["Team Members",DB.team.length,"active this program"],
+    ["Milestones",DB.milestones.length,DB.milestones.filter(m=>m.status==="Complete").length+" complete"]
+  ];
+  const circ=2*Math.PI*52, off=circ*(1-pct/100);
+  return `
+  <div class="grid kpis" style="margin-bottom:1rem">
+    ${kpis.map(k=>`<div class="card kpi"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="s">${esc(String(k[2]))}</div></div>`).join("")}
+  </div>
+  <div class="row">
+    <div class="card pad" style="flex:1;min-width:260px">
+      <div class="section-title"><h3>Overall completion</h3></div>
+      <div style="display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap">
+        <svg width="130" height="130" viewBox="0 0 130 130">
+          <circle cx="65" cy="65" r="52" fill="none" stroke="var(--line)" stroke-width="14"/>
+          <circle cx="65" cy="65" r="52" fill="none" stroke="var(--accent)" stroke-width="14" stroke-linecap="round"
+            stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 65 65)"/>
+          <text x="65" y="60" text-anchor="middle" font-size="26" font-weight="800" fill="var(--ink)">${pct}%</text>
+          <text x="65" y="80" text-anchor="middle" font-size="10" fill="var(--muted)">complete</text>
+        </svg>
+        <div class="bars" style="flex:1;min-width:180px">
+          ${byStage.map(b=>{const w=total?Math.round(b.n/total*100):0;const c=`var(--${b.s.cls.slice(2)})`;
+            return `<div class="bar-row"><span>${b.s.id}</span><div class="bar"><i style="width:${w}%;background:${c}"></i></div><span class="rt">${b.n}</span></div>`;}).join("")}
+        </div>
+      </div>
+    </div>
+    <div class="card pad" style="flex:1;min-width:260px">
+      <div class="section-title"><h3>Tasks by workstream</h3></div>
+      <div class="bars">
+        ${Object.entries(byStream).map(([k,v])=>`<div class="bar-row"><span title="${esc(k)}">${esc(k)}</span><div class="bar"><i style="width:${Math.round(v/maxStream*100)}%;background:var(--brand-2)"></i></div><span class="rt">${v}</span></div>`).join("")}
+      </div>
+    </div>
+  </div>
+  <div class="row" style="margin-top:.9rem">
+    <div class="card pad" style="flex:2;min-width:300px">
+      <div class="section-title"><h3>Attention needed</h3><span class="spacer"></span><button class="btn sm" onclick="go('reminders')">View all</button></div>
+      ${(()=>{const r=reminders().slice(0,6);if(!r.length)return `<div class="empty">Nothing overdue or due soon 🎉</div>`;
+        return `<div class="tbl-wrap"><table><thead><tr><th>Task</th><th>Owner</th><th>Due</th><th class="ct">Status</th></tr></thead><tbody>${r.map(x=>{const st=stageOf(x.t.status);return `<tr><td><b>${esc(x.t.title)}</b><div class="tiny muted">${esc(x.t.stream)}</div></td><td class="nowrap">${esc(user(x.t.owner).name)}</td><td class="nowrap">${x.t.due}${x.d>0?` <span class="chip" style="color:var(--od)">${x.d}d late</span>`:` <span class="chip">soon</span>`}</td><td class="ct"><span class="stag ${st.cls}">${st.id}</span></td></tr>`;}).join("")}</tbody></table></div>`;})()}
+    </div>
+    <div class="card pad" style="flex:1;min-width:240px">
+      <div class="section-title"><h3>Milestones</h3></div>
+      ${DB.milestones.map(m=>{const c=m.status==="Complete"?"var(--cp)":m.status==="At Risk"?"var(--od)":"var(--ip)";
+        return `<div style="display:flex;gap:.6rem;align-items:flex-start;padding:.5rem 0;border-bottom:1px solid var(--line)"><span style="width:10px;height:10px;border-radius:50%;background:${c};margin-top:.35rem"></span><div style="flex:1"><b class="small">${esc(m.name)}</b><div class="tiny muted">${m.date} · ${esc(user(m.owner).name)}</div></div><span class="chip">${m.status}</span></div>`;}).join("")}
+    </div>
+  </div>`;
+}
+
+function vBoard(){
+  const cols=STAGES.map(s=>{
+    const items=DB.tasks.filter(t=>t.status===s.id);
+    return `<div class="col" data-stage="${esc(s.id)}">
+      <div class="col-h ${s.cls}"><span class="stag ${s.cls}">${s.id}</span><span class="cnt">${items.length}</span></div>
+      <div class="col-body" data-drop="${esc(s.id)}">
+        ${items.map(taskCard).join("")||'<div class="tiny muted" style="text-align:center;padding:1rem">Drop tasks here</div>'}
+      </div></div>`;
+  }).join("");
+  return `<div class="toolbar"><span class="small muted">Drag a card between columns to move it through the workflow. ${can('move')?'':'<b>Viewer role: read-only.</b>'}</span>
+    <span class="spacer"></span><button class="btn sm" onclick="go('intake')">➕ New task</button></div>
+    <div class="board">${cols}</div>`;
+}
+function taskCard(t){
+  const st=stageOf(t.status),dl=daysLate(t),ow=user(t.owner);
+  const drag=can('move')?`draggable="true" ondragstart="dragStart(event,'${t.id}')"`:"";
+  return `<div class="tcard ${dl>0?'late':''}" ${drag} onclick="openTask('${t.id}')">
+    <div class="tt">${esc(t.title)}</div>
+    <div class="meta"><span class="chip">${esc(t.id)}</span><span class="chip">${esc(t.stream)}</span>
+      ${t.needsApproval?`<span class="chip" style="color:var(--rv)">approval</span>`:""}
+      ${dl>0?`<span class="chip" style="color:var(--od)">${dl}d late</span>`:""}</div>
+    <div class="prog"><i style="width:${t.pct}%"></i></div>
+    <div class="meta" style="margin-top:.4rem"><span class="mini-av" title="${esc(ow.name)}">${initials(ow.name)}</span>
+      <span>${esc(ow.name.split(" ").slice(-1)[0])}</span><span class="spacer" style="flex:1"></span><span>📅 ${t.due}</span></div>
+  </div>`;
+}
+let _drag=null;
+function dragStart(e,id){_drag=id;e.dataTransfer.effectAllowed="move";}
+function wireBoard(){
+  document.querySelectorAll(".col-body").forEach(b=>{
+    b.addEventListener("dragover",e=>{if(!can('move'))return;e.preventDefault();b.parentElement.classList.add("drag-over");});
+    b.addEventListener("dragleave",()=>b.parentElement.classList.remove("drag-over"));
+    b.addEventListener("drop",e=>{e.preventDefault();b.parentElement.classList.remove("drag-over");
+      const stage=b.getAttribute("data-drop");if(_drag&&can('move'))moveTask(_drag,stage);_drag=null;});
+  });
+}
+function moveTask(id,stage){
+  const t=DB.tasks.find(x=>x.id===id);if(!t||t.status===stage)return;
+  const from=t.status;t.status=stage;
+  if(stage==="Complete"){t.pct=100;t.actualFinish="2026-07-02";if(t.approvalStatus==="Pending"){/*keep*/}}
+  else if(stage==="In Progress"&&t.pct===0)t.pct=10;
+  if(stage==="In Review"&&t.needsApproval){t.approvalStatus="Pending";notify("Approval requested: "+t.title,id);}
+  audit("move","task",t.id+" "+from+" → "+stage);save();render();toast(t.id+" → "+stage,"ok");
+}
+
+function vTasks(){
+  const q=(vTasks._q||"").toLowerCase(),fs=vTasks._stage||"",fo=vTasks._owner||"";
+  let rows=DB.tasks.slice();
+  if(q)rows=rows.filter(t=>(t.title+t.stream+t.id+t.desc).toLowerCase().includes(q));
+  if(fs)rows=rows.filter(t=>t.status===fs);
+  if(fo)rows=rows.filter(t=>t.owner===fo||t.collaborators.includes(fo));
+  const opts=DB.team.map(u=>`<option value="${u.id}" ${fo===u.id?'selected':''}>${esc(u.name)}</option>`).join("");
+  return `<div class="toolbar">
+    <input class="grow" placeholder="🔎 Search tasks…" value="${esc(vTasks._q||'')}" oninput="vTasks._q=this.value;render()">
+    <select style="width:auto" onchange="vTasks._stage=this.value;render()"><option value="">All stages</option>${STAGES.map(s=>`<option ${fs===s.id?'selected':''}>${s.id}</option>`).join("")}</select>
+    <select style="width:auto" onchange="vTasks._owner=this.value;render()"><option value="">All owners</option>${opts}</select>
+    <span class="spacer"></span>
+    <button class="btn sm" onclick="exportCSV()">⬇︎ CSV</button>
+    ${can('create')?`<button class="btn sm primary" onclick="go('intake')">➕ New</button>`:""}
+  </div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>ID</th><th>Task</th><th>Owner</th><th>Sprint</th><th>Due</th><th class="ct">Late</th><th class="ct">%</th><th>Status</th><th class="ct"></th></tr></thead>
+    <tbody>${rows.map(t=>{const st=stageOf(t.status),dl=daysLate(t);return `<tr onclick="openTask('${t.id}')" style="cursor:pointer">
+      <td class="nowrap"><span class="chip">${t.id}</span></td>
+      <td><b>${esc(t.title)}</b><div class="tiny muted">${esc(t.stream)}${t.deps.length?` · needs ${esc(t.deps.join(", "))}`:""}</div></td>
+      <td class="nowrap">${esc(user(t.owner).name)}</td><td class="nowrap">${esc(t.sprint)}</td>
+      <td class="nowrap">${t.due}</td><td class="ct">${dl>0?`<span style="color:var(--od);font-weight:700">${dl}</span>`:"—"}</td>
+      <td class="ct">${t.pct}%</td><td><span class="stag ${st.cls}">${st.id}</span></td>
+      <td class="ct">›</td></tr>`;}).join("")||`<tr><td colspan="9"><div class="empty">No tasks match.</div></td></tr>`}</tbody>
+  </table></div>
+  <div class="small muted" style="margin-top:.5rem">${rows.length} of ${DB.tasks.length} tasks</div>`;
+}
+
+function vIntake(){
+  if(!can('create'))return permWall("create tasks");
+  const owners=DB.team.map(u=>`<option value="${u.id}">${esc(u.name)} — ${esc(u.role)}</option>`).join("");
+  const streams=["Operations","Client Onboarding","Marketing","Finance","IT & Security","Procurement","Quality"];
+  return `<div class="card pad" style="max-width:720px">
+    <div class="section-title"><h3>New project task</h3></div>
+    <p class="small muted">Create a work item. Fields are validated client-side; the production API re-validates against a JSON schema (see Architecture → API).</p>
+    <div class="field"><label>Task title *</label><input id="in-title" placeholder="e.g. Site survey — Regional Node 14"><div class="err" id="e-title"></div></div>
+    <div class="two">
+      <div class="field"><label>Workstream *</label><select id="in-stream">${streams.map(s=>`<option>${s}</option>`).join("")}</select></div>
+      <div class="field"><label>Sprint / cycle</label><input id="in-sprint" placeholder="Sprint 6" value="Sprint 6"></div>
+    </div>
+    <div class="field"><label>Description</label><textarea id="in-desc" rows="2" placeholder="What needs to happen and why."></textarea></div>
+    <div class="two">
+      <div class="field"><label>Owner *</label><select id="in-owner">${owners}</select></div>
+      <div class="field"><label>Data sensitivity</label><select id="in-clr"><option>Public</option><option selected>Internal</option><option>Confidential</option><option>Restricted</option></select></div>
+    </div>
+    <div class="two">
+      <div class="field"><label>Start date *</label><input id="in-start" type="date" value="2026-07-02"></div>
+      <div class="field"><label>Due date *</label><input id="in-due" type="date" value="2026-07-16"><div class="err" id="e-due"></div></div>
+    </div>
+    <label style="display:flex;align-items:center;gap:.5rem;font-weight:600;margin:.3rem 0 1rem"><input type="checkbox" id="in-appr" style="width:auto"> Requires approval before it can be marked complete</label>
+    <div style="display:flex;gap:.5rem"><button class="btn primary" onclick="createTask()">Create task</button><button class="btn" onclick="go('tasks')">Cancel</button></div>
+  </div>`;
+}
+function createTask(){
+  if(!can('create')){toast("Your role cannot create tasks","err");return;}
+  if(!$("#in-title")){return;} // intake view not mounted
+  const title=$("#in-title").value.trim(),start=$("#in-start").value,due=$("#in-due").value;
+  let ok=true;$("#e-title").textContent="";$("#e-due").textContent="";
+  if(title.length<4){$("#e-title").textContent="Title must be at least 4 characters.";ok=false;}
+  if(due&&start&&Date.parse(due)<Date.parse(start)){$("#e-due").textContent="Due date cannot be before the start date.";ok=false;}
+  if(!ok)return;
+  const id="T-"+String(++DB.seq).padStart(3,"0");
+  const t={id,title,stream:$("#in-stream").value,desc:$("#in-desc").value.trim(),status:"Not Started",pct:0,
+    owner:$("#in-owner").value,collaborators:[],sprint:$("#in-sprint").value.trim(),start,due,
+    needsApproval:$("#in-appr").checked,approvalStatus:"None",deps:[],sensitivity:$("#in-clr").value,
+    checklist:[],files:[],comments:[],createdBy:SESSION.uid,createdAt:"2026-07-02"};
+  DB.tasks.unshift(t);audit("create","task",id+" "+title);notify("New task assigned: "+title,id);save();
+  toast("Task "+id+" created","ok");go("tasks");
+}
+
+function vApprovals(){
+  const pend=pendingApprovals();
+  const canA=can('approve');
+  return `<div class="toolbar"><span class="small muted">${canA?"You can approve or reject items routed to you.":"Your role cannot approve; you can review status."}</span></div>
+  ${pend.length?`<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
+    ${pend.map(t=>{const dl=daysLate(t);return `<div class="card pad">
+      <div style="display:flex;justify-content:space-between;gap:.5rem"><b>${esc(t.title)}</b><span class="chip">${t.id}</span></div>
+      <div class="small muted" style="margin:.3rem 0">${esc(t.stream)} · owner ${esc(user(t.owner).name)}</div>
+      <p class="small">${esc(t.desc||"—")}</p>
+      <div class="meta small muted" style="display:flex;gap:.5rem;margin:.4rem 0"><span>Due ${t.due}</span>${dl>0?`<span style="color:var(--od)">${dl}d late</span>`:""}<span>· ${t.pct}%</span></div>
+      ${canA?`<div style="display:flex;gap:.5rem;margin-top:.5rem"><button class="btn primary sm" onclick="decideApproval('${t.id}',true)">✔ Approve</button><button class="btn danger sm" onclick="decideApproval('${t.id}',false)">✕ Reject</button></div>`:`<span class="stag s-rv">Pending approval</span>`}
+    </div>`;}).join("")}</div>`:`<div class="card pad"><div class="empty">No items awaiting approval. Move a task that "requires approval" into <b>In Review</b> to route it here.</div></div>`}
+  <div class="section-title" style="margin-top:1.4rem"><h3>Recent approval decisions</h3></div>
+  <div class="tbl-wrap"><table><thead><tr><th>When</th><th>Who</th><th>Action</th><th>Detail</th></tr></thead>
+    <tbody>${DB.audit.filter(a=>a.action==="approve"||a.action==="reject").slice(0,10).map(a=>`<tr><td class="nowrap tiny">${a.ts.slice(0,16).replace("T"," ")}</td><td class="nowrap">${esc(a.user)}</td><td><span class="chip" style="color:${a.action==='approve'?'var(--cp)':'var(--od)'}">${a.action}</span></td><td>${esc(a.detail)}</td></tr>`).join("")||`<tr><td colspan="4"><div class="empty">No decisions yet.</div></td></tr>`}</tbody></table></div>`;
+}
+function decideApproval(id,ok){
+  const t=DB.tasks.find(x=>x.id===id);if(!t||!can('approve'))return;
+  const note=prompt((ok?"Approve":"Reject")+" “"+t.title+"”.\nOptional note:")||"";
+  t.approvalStatus=ok?"Approved":"Rejected";
+  if(ok){t.status="Complete";t.pct=100;t.actualFinish="2026-07-02";}else{t.status="In Progress";}
+  audit(ok?"approve":"reject","task",t.id+" "+(ok?"approved":"rejected")+(note?": "+note:""));
+  notify((ok?"Approved":"Rejected")+": "+t.title,id);save();render();toast("Decision recorded","ok");
+}
+
+function vTemplates(){
+  return `<div class="toolbar"><span class="small muted">Apply a reusable workflow template to generate a full set of tasks with staggered due dates.</span></div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))">
+    ${DB.templates.map(tp=>`<div class="card pad">
+      <div style="font-size:1.7rem">${tp.icon}</div>
+      <h3 style="margin:.3rem 0 .2rem;font-size:1rem">${esc(tp.name)}</h3>
+      <p class="small muted">${esc(tp.desc)}</p>
+      <div class="tiny muted" style="margin:.4rem 0">${tp.tasks.length} preset tasks</div>
+      <ul style="margin:.2rem 0 .6rem;padding-left:1.1rem;font-size:.78rem;color:var(--muted)">${tp.tasks.slice(0,4).map(x=>`<li>${esc(x[0])}</li>`).join("")}${tp.tasks.length>4?`<li>+${tp.tasks.length-4} more…</li>`:""}</ul>
+      ${can('template')?`<button class="btn primary sm" onclick="applyTemplate('${tp.id}')">Apply template</button>`:`<span class="chip">Manager+ required</span>`}
+    </div>`).join("")}
+  </div>`;
+}
+function applyTemplate(id){
+  const tp=DB.templates.find(x=>x.id===id);if(!tp||!can('template'))return;
+  if(!confirm("Create "+tp.tasks.length+' tasks from "'+tp.name+'"?'))return;
+  const base=TODAY;let n=0;
+  tp.tasks.forEach(x=>{const tid="T-"+String(++DB.seq).padStart(3,"0");n++;
+    DB.tasks.unshift({id:tid,title:x[0]+" — "+tp.name,stream:x[1],desc:"Generated from template: "+tp.name,
+      status:"Not Started",pct:0,owner:SESSION.uid,collaborators:[],sprint:"Sprint 6",
+      start:"2026-07-02",due:new Date(base+x[2]*86400000).toISOString().slice(0,10),
+      needsApproval:x[1]==="Operations"||x[1]==="IT & Security",approvalStatus:"None",deps:[],
+      sensitivity:"Internal",checklist:[],files:[],comments:[],createdBy:SESSION.uid,createdAt:"2026-07-02"});});
+  audit("template","project","Applied “"+tp.name+"” → "+n+" tasks");save();toast(n+" tasks created from template","ok");go("tasks");
+}
+
+function vTeam(){
+  const rows=DB.team.map(u=>{const assigned=DB.tasks.filter(t=>t.owner===u.id||t.collaborators.includes(u.id)).length;
+    return `<tr><td><div style="display:flex;align-items:center;gap:.5rem"><span class="mini-av">${initials(u.name)}</span><div><b>${esc(u.name)}</b><div class="tiny muted">${esc(u.email)}</div></div></div></td>
+    <td>${esc(u.role)}</td><td><span class="chip">${esc(u.appRole)}</span></td><td class="ct">${assigned}</td>
+    <td><span class="chip" style="color:${u.access==='Admin'?'var(--od)':u.access==='Elevated'?'var(--brand-2)':'var(--muted)'}">${esc(u.access)}</span></td>
+    <td>${esc(u.avail)}</td></tr>`;}).join("");
+  const raci=DB.raci.map(r=>`<tr><td>${esc(r.act)}</td><td class="ct raci-${r.Team}">${r.Team}</td><td class="ct raci-${r.Customer}">${r.Customer}</td><td class="ct raci-${r.Vendor}">${r.Vendor}</td></tr>`).join("");
+  return `<div class="section-title"><h3>Team roster</h3><span class="spacer"></span><span class="small muted">Field-level control: access level is visible to Manager+ only</span></div>
+  <div class="tbl-wrap"><table><thead><tr><th>Member</th><th>Title</th><th>App role</th><th class="ct">Tasks</th><th>${can('manageTeam')?'Access':'—'}</th><th>Availability</th></tr></thead><tbody>${can('manageTeam')?rows:rows.replace(/<td><span class="chip"[^<]*>[^<]*<\/span><\/td>/g,'<td><span class="chip">🔒 restricted</span></td>')}</tbody></table></div>
+  <div class="section-title" style="margin-top:1.4rem"><h3>RACI matrix</h3><span class="spacer"></span><span class="small"><span class="raci-R">R</span>esponsible · <span class="raci-A">A</span>ccountable · <span class="raci-C">C</span>onsulted · <span class="raci-I">I</span>nformed</span></div>
+  <div class="tbl-wrap"><table><thead><tr><th>Activity</th><th class="ct">Team</th><th class="ct">Customer</th><th class="ct">Vendor</th></tr></thead><tbody>${raci}</tbody></table></div>`;
+}
+
+function vFiles(){
+  return `<div class="toolbar"><span class="small muted">Attachment metadata. Production stores files in object storage with AV scanning and signed URLs; uploads limited to 25 MB and an allow-list of types.</span></div>
+  <div class="tbl-wrap"><table><thead><tr><th>File</th><th>Task</th><th>Size</th><th>Type</th><th class="ct">AV scan</th><th>Added by</th><th>Date</th></tr></thead>
+  <tbody>${DB.files.map(f=>`<tr><td><b>${esc(f.name)}</b></td><td><span class="chip">${esc(f.task)}</span></td><td class="nowrap">${fmtBytes(f.size)}</td><td class="tiny">${esc(f.type.split("/").pop())}</td>
+    <td class="ct"><span class="chip" style="color:${f.scan==='clean'?'var(--cp)':'var(--ip)'}">${f.scan==='clean'?'✔ clean':'⏳ scanning'}</span></td>
+    <td class="nowrap">${esc(user(f.by).name)}</td><td class="nowrap">${f.at}</td></tr>`).join("")}</tbody></table></div>
+  <div class="callout" style="margin-top:1rem">🛈 In this PoC no bytes leave your device. The flow shown is: client requests a <b>signed upload URL</b> → uploads directly to object storage → an async worker runs a <b>virus scan</b> → on “clean”, a <b>signed, time-limited download URL</b> is issued. See Architecture → Object storage.</div>`;
+}
+
+function vReminders(){
+  const r=reminders();
+  const notifs=DB.notifications.slice(0,20);
+  return `<div class="row"><div class="card pad" style="flex:2;min-width:300px">
+    <div class="section-title"><h3>Due soon & overdue</h3><span class="spacer"></span><span class="chip">${r.length}</span></div>
+    ${r.length?`<div class="tbl-wrap"><table><thead><tr><th>Task</th><th>Owner</th><th>Due</th><th class="ct">Status</th></tr></thead><tbody>${r.map(x=>{const st=stageOf(x.t.status);return `<tr onclick="openTask('${x.t.id}')" style="cursor:pointer"><td><b>${esc(x.t.title)}</b><div class="tiny muted">${esc(x.t.id)} · ${esc(x.t.stream)}</div></td><td class="nowrap">${esc(user(x.t.owner).name)}</td><td class="nowrap">${x.t.due} ${x.d>0?`<span class="chip" style="color:var(--od)">${x.d}d late</span>`:`<span class="chip">≤3d</span>`}</td><td class="ct"><span class="stag ${st.cls}">${st.id}</span></td></tr>`;}).join("")}</tbody></table></div>`:`<div class="empty">All caught up.</div>`}
+  </div>
+  <div class="card pad" style="flex:1;min-width:240px">
+    <div class="section-title"><h3>Notifications</h3>${DB.notifications.some(n=>!n.read)?`<span class="spacer"></span><button class="btn sm" onclick="markAllRead()">Mark read</button>`:""}</div>
+    ${notifs.length?notifs.map(n=>`<div style="padding:.5rem 0;border-bottom:1px solid var(--line);${n.read?'opacity:.6':''}"><div class="small"${n.taskId?` style="cursor:pointer" onclick="openTask('${n.taskId}')"`:""}>${esc(n.text)}</div><div class="tiny muted">${n.ts.slice(0,16).replace("T"," ")}</div></div>`).join(""):`<div class="empty">No notifications.</div>`}
+  </div></div>
+  <div class="callout" style="margin-top:1rem">🔔 Production reminders run as scheduled jobs on Redis + a worker fleet (email/calendar/push) — fully event-driven, no manual checking. Notifications fan out over Redis pub/sub. See Architecture → Redis usage.</div>`;
+}
+function markAllRead(){DB.notifications.forEach(n=>n.read=true);save();render();}
+
+function vReports(){
+  const t=DB.tasks,byStream={},byOwner={};
+  t.forEach(x=>{byStream[x.stream]=byStream[x.stream]||{n:0,done:0};byStream[x.stream].n++;if(x.status==="Complete")byStream[x.stream].done++;
+    const o=user(x.owner).name;byOwner[o]=byOwner[o]||{n:0,late:0};byOwner[o].n++;if(isLate(x))byOwner[o].late++;});
+  return `<div class="toolbar"><span class="small muted">Exportable reports.</span><span class="spacer"></span>
+    <button class="btn sm" onclick="exportCSV()">⬇︎ Tasks CSV</button><button class="btn sm" onclick="exportJSON()">⬇︎ Full JSON</button><button class="btn sm" onclick="window.print()">🖨️ Print / PDF</button></div>
+  <div class="row"><div class="card pad" style="flex:1;min-width:280px"><div class="section-title"><h3>Completion by workstream</h3></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Workstream</th><th class="ct">Tasks</th><th class="ct">Done</th><th class="ct">%</th></tr></thead><tbody>${Object.entries(byStream).map(([k,v])=>`<tr><td>${esc(k)}</td><td class="ct">${v.n}</td><td class="ct">${v.done}</td><td class="ct"><b>${Math.round(v.done/v.n*100)}%</b></td></tr>`).join("")}</tbody></table></div></div>
+  <div class="card pad" style="flex:1;min-width:280px"><div class="section-title"><h3>Workload by owner</h3></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Owner</th><th class="ct">Tasks</th><th class="ct">Late</th></tr></thead><tbody>${Object.entries(byOwner).map(([k,v])=>`<tr><td>${esc(k)}</td><td class="ct">${v.n}</td><td class="ct">${v.late>0?`<span style="color:var(--od);font-weight:700">${v.late}</span>`:"0"}</td></tr>`).join("")}</tbody></table></div></div></div>`;
+}
+function exportCSV(){
+  if(!can('export')&&!can('all')){toast("Your role cannot export","err");return;}
+  const cols=["id","title","stream","status","pct","owner","sprint","start","due","daysLate","sensitivity"];
+  const lines=[cols.join(",")].concat(DB.tasks.map(t=>cols.map(c=>{let v=c==="owner"?user(t.owner).name:c==="daysLate"?daysLate(t):t[c];
+    v=String(v==null?"":v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}).join(",")));
+  download("praveno-tasks.csv",lines.join("\n"),"text/csv");audit("export","report","Tasks CSV exported");toast("CSV exported","ok");
+}
+function exportJSON(){if(!can('export')&&!can('all')){toast("Your role cannot export","err");return;}
+  download("praveno-export.json",JSON.stringify({org:DB.org,exportedAt:new Date().toISOString(),tasks:DB.tasks,team:DB.team,milestones:DB.milestones},null,2),"application/json");
+  audit("export","report","Full JSON exported");toast("JSON exported","ok");}
+function download(name,data,type){const b=new Blob([data],{type});const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
+
+function vAudit(){
+  return `<div class="toolbar"><span class="small muted">Immutable-style activity trail (NIST AU-2/AU-3/AU-12). Production writes to an append-only, tamper-evident store.</span><span class="spacer"></span><span class="chip">${DB.audit.length} events</span></div>
+  <div class="tbl-wrap"><table><thead><tr><th>Timestamp (UTC)</th><th>User</th><th>Action</th><th>Entity</th><th>Detail</th></tr></thead>
+  <tbody>${DB.audit.slice(0,120).map(a=>`<tr><td class="nowrap tiny">${a.ts.slice(0,19).replace("T"," ")}</td><td class="nowrap">${esc(a.user)}</td><td><span class="chip">${esc(a.action)}</span></td><td class="tiny">${esc(a.entity)}</td><td>${esc(a.detail)}</td></tr>`).join("")}</tbody></table></div>`;
+}
+
+function vProcess(){
+  return `<div class="card pad">
+    <div class="section-title"><h3>Standard workflow process flow</h3><span class="spacer"></span><span class="small muted">Intake → Approve → Execute → Verify → Close</span></div>
+    <div style="overflow-x:auto">${processSVG()}</div>
+    <div class="legend">
+      <span><i style="background:var(--ns)"></i>Intake</span><span><i style="background:var(--ip)"></i>In progress</span>
+      <span><i style="background:var(--rv)"></i>Review/Approval</span><span><i style="background:var(--cp)"></i>Complete</span><span><i style="background:var(--od)"></i>Exception</span>
+    </div>
+  </div>
+  <div class="row" style="margin-top:.9rem">
+    <div class="card pad" style="flex:1;min-width:260px"><div class="section-title"><h3>Swimlane responsibilities</h3></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Stage</th><th>Owner role</th><th>Control</th></tr></thead><tbody>
+      <tr><td>Intake</td><td>Requester / Member</td><td>Schema validation, mandatory fields</td></tr>
+      <tr><td>Triage & assign</td><td>Manager</td><td>RBAC, RACI assignment</td></tr>
+      <tr><td>Execution</td><td>Owner + collaborators</td><td>Dependencies, checklists, file AV scan</td></tr>
+      <tr><td>Review / approval</td><td>Approver / Finance</td><td>Routing, audit trail (AU-2)</td></tr>
+      <tr><td>Closeout</td><td>Manager</td><td>Reporting, export, milestone update</td></tr>
+    </tbody></table></div></div>
+    <div class="card pad" style="flex:1;min-width:260px"><div class="section-title"><h3>Built-in automation</h3></div>
+      <ul style="font-size:.85rem;line-height:1.7">
+        <li><b>Assignment notifications</b> — event-driven email/push the moment work is assigned.</li>
+        <li><b>Status dashboard</b> — live KPIs recalculated on every change.</li>
+        <li><b>Notification log</b> — append-only audit table, tamper-evident.</li>
+        <li><b>Role-scoped rosters</b> — RBAC-scoped user directory + SSO.</li>
+        <li><b>Reusable templates</b> — one-click apply with staggered due dates.</li>
+        <li><b>Reminders</b> — scheduled jobs flag due-soon and overdue work automatically.</li>
+      </ul>
+    </div>
+  </div>`;
+}
+function processSVG(){
+  const steps=[["Intake","var(--ns)"],["Triage &\nAssign","var(--ip)"],["Execute","var(--ip)"],["Review /\nApproval","var(--rv)"],["Complete","var(--cp)"],["Closeout &\nReport","var(--cp)"]];
+  let x=20;const w=120,h=64,gap=44,y=60;let boxes="",arrows="";
+  steps.forEach((s,i)=>{
+    boxes+=`<g><rect x="${x}" y="${y}" rx="12" width="${w}" height="${h}" fill="var(--surface)" stroke="${s[1]}" stroke-width="2.5"/>`+
+      s[0].split("\n").map((ln,j)=>`<text x="${x+w/2}" y="${y+ (s[0].includes("\n")?26:38) +j*16}" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">${ln}</text>`).join("")+`</g>`;
+    if(i<steps.length-1){const ax=x+w,axe=x+w+gap;arrows+=`<line x1="${ax}" y1="${y+h/2}" x2="${axe-6}" y2="${y+h/2}" stroke="var(--muted)" stroke-width="2" marker-end="url(#ar)"/>`;}
+    x+=w+gap;
+  });
+  // exception branch from Review down to Execute
+  const rx=20+3*(w+gap)+w/2;
+  const exc=`<path d="M ${rx} ${y+h} q 0 46 -${w+gap} 46 q -${w+gap} 0 -${w+gap} -30" fill="none" stroke="var(--od)" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#are)"/>
+    <text x="${rx-(w+gap)}" y="${y+h+64}" text-anchor="middle" font-size="11" fill="var(--od)" font-weight="700">rejected → rework</text>`;
+  return `<svg class="flow-svg" viewBox="0 0 ${x} 200" xmlns="http://www.w3.org/2000/svg">
+    <defs><marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--muted)"/></marker>
+    <marker id="are" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--od)"/></marker></defs>
+    ${arrows}${exc}${boxes}</svg>`;
+}
+
+/* ---------------- governance ---------------- */
+const GOV_META=[
+  {id:"gov-architecture",label:"Architecture",ic:"🏛️"},
+  {id:"gov-security",label:"Security & Controls",ic:"🛡️"},
+  {id:"gov-testing",label:"Stress & Testing",ic:"🧪"},
+  {id:"gov-packaging",label:"Mobile & DevSecOps",ic:"📱"}
+];
+function vGovernance(){
+  const nav=GOV_META.map(g=>`<button class="${GOVTAB===g.id?'active':''}" onclick="GOVTAB='${g.id}';render()">${g.ic} ${g.label}</button>`).join("");
+  const pane=$('#gov-store [data-gov="'+GOVTAB+'"]');
+  const body=pane?pane.innerHTML:"<p class='muted'>Section unavailable.</p>";
+  return `<div class="callout ok">✅ These sections are the production design + compliance evidence backing this PoC: NIST SP 800-37 RMF &amp; SP 800-53 Rev 5 controls, OWASP ASVS/MASVS, a 20,000-user capacity &amp; stress model, and Android/iOS packaging. The app above demonstrates the controls in action (RBAC, audit, validation, approvals, session timeout).</div>
+    <div class="subnav">${nav}</div><div class="card pad gov-body">${body}</div>`;
+}
+
+function vSettings(){
+  return `<div class="row"><div class="card pad" style="flex:1;min-width:280px">
+    <div class="section-title"><h3>Session & security</h3></div>
+    <table><tbody>
+      <tr><td>Signed-in user</td><td class="rt"><b>${esc(user(SESSION.uid).name)}</b></td></tr>
+      <tr><td>Role (RBAC)</td><td class="rt">${SESSION.role}</td></tr>
+      <tr><td>Permissions</td><td class="rt tiny">${Object.keys(ROLE_PERMS[SESSION.role]||{}).join(", ")||"read-only"}</td></tr>
+      <tr><td>Session start</td><td class="rt tiny">${new Date(SESSION.loginAt).toISOString().slice(0,19).replace("T"," ")}</td></tr>
+      <tr><td>Idle timeout</td><td class="rt">15 minutes</td></tr>
+      <tr><td>Transport</td><td class="rt">TLS 1.2+ (prod)</td></tr>
+      <tr><td>At rest</td><td class="rt">AES-256 (prod)</td></tr>
+    </tbody></table>
+    <p class="small muted" style="margin-top:.6rem">Switch roles by signing out and choosing a different role to see RBAC enforcement change across the app.</p>
+  </div>
+  <div class="card pad" style="flex:1;min-width:280px">
+    <div class="section-title"><h3>Workspace data</h3></div>
+    <p class="small muted">All PoC data lives in your browser (localStorage) so the app works fully offline. Nothing is sent to a server.</p>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem">
+      <button class="btn sm" onclick="exportJSON()">⬇︎ Backup (JSON)</button>
+      <button class="btn sm danger" onclick="resetDemo()">↺ Reset demo data</button>
+    </div>
+    <div class="section-title" style="margin-top:1.2rem"><h3>Integrations & plugins</h3></div>
+    <p class="small muted">Production connectors (all OAuth-gated): Email/Calendar (M365, Google), Storage (SharePoint, Box, S3), CRM (HubSpot, Salesforce), Accounting (QuickBooks), PM (monday.com, Asana, Linear), Observability (Datadog).</p>
+    <div style="display:flex;gap:.35rem;flex-wrap:wrap">${["M365","Google","Box","S3","HubSpot","QuickBooks","monday.com","Asana","Datadog","Slack"].map(x=>`<span class="chip">${x}</span>`).join("")}</div>
+  </div></div>`;
+}
+
+function permWall(what){return `<div class="card pad"><div class="empty">🔒 Your role (<b>${SESSION.role}</b>) cannot ${what}. Sign in as Manager or Owner to try this.</div></div>`;}
+
+/* ---------------- task modal ---------------- */
+function openTask(id){
+  const t=DB.tasks.find(x=>x.id===id);if(!t)return;const st=stageOf(t.status);
+  const editable=can('edit')||(SESSION.uid===t.owner&&can('move'));
+  const collab=t.collaborators.map(c=>`<span class="chip">${esc(user(c).name)}</span>`).join(" ")||'<span class="tiny muted">none</span>';
+  const files=DB.files.filter(f=>f.task===t.id).map(f=>`<li>${esc(f.name)} <span class="tiny muted">(${fmtBytes(f.size)}, ${f.scan})</span></li>`).join("")||"<li class='tiny muted'>No files</li>";
+  const stageBtns=STAGES.map(s=>`<option value="${s.id}" ${t.status===s.id?'selected':''}>${s.id}</option>`).join("");
+  const html=`<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem">
+      <div><span class="chip">${t.id}</span> <span class="stag ${st.cls}">${st.id}</span>
+        <h3 style="margin:.4rem 0 0">${esc(t.title)}</h3><div class="small muted">${esc(t.stream)} · ${esc(t.sprint)}</div></div>
+      <button class="btn ghost" onclick="closeModal()">✕</button></div>
+    <p class="small" style="margin:.6rem 0">${esc(t.desc||"No description.")}</p>
+    <div class="two">
+      <div><label>Owner</label><div>${esc(user(t.owner).name)}</div></div>
+      <div><label>Collaborators</label><div>${collab}</div></div>
+      <div><label>Start</label><div>${t.start}</div></div>
+      <div><label>Due</label><div>${t.due} ${daysLate(t)>0?`<span class="chip" style="color:var(--od)">${daysLate(t)}d late</span>`:""}</div></div>
+      <div><label>Progress</label><div>${t.pct}%</div></div>
+      <div><label>Sensitivity</label><div><span class="chip">${esc(t.sensitivity)}</span></div></div>
+    </div>
+    ${t.deps.length?`<div class="field" style="margin-top:.6rem"><label>Dependencies</label>${t.deps.map(d=>`<span class="chip">${esc(d)}</span>`).join(" ")}</div>`:""}
+    <div class="field"><label>Files</label><ul style="margin:.2rem 0;padding-left:1.1rem;font-size:.82rem">${files}</ul></div>
+    ${editable?`<div class="two" style="margin-top:.4rem">
+      <div class="field"><label>Move to stage</label><select id="m-stage">${stageBtns}</select></div>
+      <div class="field"><label>Progress %</label><input id="m-pct" type="number" min="0" max="100" value="${t.pct}"></div></div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <button class="btn primary sm" onclick="saveTask('${t.id}')">Save</button>
+        ${t.needsApproval&&t.approvalStatus!=='Pending'?`<button class="btn sm" onclick="requestApproval('${t.id}')">Request approval</button>`:""}
+        ${can('all')?`<button class="btn danger sm" onclick="deleteTask('${t.id}')">Delete</button>`:""}
+      </div>`:`<div class="callout">🔒 Read-only for your role.</div>`}
+  </div></div>`;
+  $("#modal-root").innerHTML=html;
+}
+function closeModal(){$("#modal-root").innerHTML="";}
+function saveTask(id){const t=DB.tasks.find(x=>x.id===id);if(!t)return;
+  if(!(can('edit')||(SESSION.uid===t.owner&&can('move')))){toast("Your role cannot edit this task","err");return;}
+  const se=$("#m-stage"),pe=$("#m-pct");if(!se||!pe)return; // modal not mounted
+  const ns=se.value,np=Math.max(0,Math.min(100,parseInt(pe.value)||0));
+  const changed=[];if(ns!==t.status){changed.push(t.status+"→"+ns);t.status=ns;}if(np!==t.pct){changed.push("pct "+t.pct+"→"+np);t.pct=np;}
+  if(ns==="Complete")t.pct=100;if(ns==="In Review"&&t.needsApproval){t.approvalStatus="Pending";notify("Approval requested: "+t.title,id);}
+  if(changed.length){audit("edit","task",t.id+" "+changed.join(", "));save();toast("Saved","ok");}
+  closeModal();render();}
+function requestApproval(id){const t=DB.tasks.find(x=>x.id===id);if(!t)return;t.status="In Review";t.approvalStatus="Pending";
+  audit("edit","task",t.id+" approval requested");notify("Approval requested: "+t.title,id);save();closeModal();render();toast("Routed for approval","ok");}
+function deleteTask(id){if(!can('all'))return;if(!confirm("Delete this task?"))return;
+  DB.tasks=DB.tasks.filter(x=>x.id!==id);audit("delete","task",id);save();closeModal();render();toast("Task deleted","ok");}
+
+/* ---------------- connectivity ---------------- */
+function updateConn(){const on=navigator.onLine;$("#conn-dot").classList.toggle("off",!on);
+  $("#conn-txt").textContent=on?"Online":"Offline — changes saved locally";}
+window.addEventListener("online",updateConn);window.addEventListener("offline",updateConn);
+
+/* ---------------- boot ---------------- */
+DB=load();updateConn();
+// iOS: show Add-to-Home-Screen install hint (hidden once running standalone)
+if(/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.matchMedia("(display-mode: standalone)").matches&&!navigator.standalone){
+  const ih=$("#ios-hint");if(ih)ih.style.display="block";
+}
+$("#li-btn").addEventListener("click",doLogin);
+$("#li-pass").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
+window.go=go;window.toggleSide=toggleSide;window.logout=logout;window.openTask=openTask;window.closeModal=closeModal;
+window.dragStart=dragStart;window.createTask=createTask;window.decideApproval=decideApproval;window.applyTemplate=applyTemplate;
+window.exportCSV=exportCSV;window.exportJSON=exportJSON;window.saveTask=saveTask;window.deleteTask=deleteTask;
+window.requestApproval=requestApproval;window.markAllRead=markAllRead;window.resetDemo=resetDemo;window.vTasks=vTasks;
+</script>
+<!--APP-END-->
+<script>
+/* Service worker registration (no-op on file:// and inside sandboxed artifacts) */
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  window.addEventListener("load",()=>navigator.serviceWorker.register("service-worker.js").catch(()=>{}));
+}
+</script>
+</body>
+</html>
