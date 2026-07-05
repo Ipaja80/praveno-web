@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0E2A47">
-<meta name="description" content="Praveno workforce and project management demo prepared for Thedcf — time and attendance, delivery dashboard, project Gantt, mobile apps.">
+<meta name="description" content="Praveno workforce and project management demo prepared for Thedcf — time and attendance, delivery dashboard, workflow board, RACI, approvals, project Gantt, mobile apps.">
 </head>
 <body>
 <title>Praveno — Workforce &amp; Projects Demo for Thedcf</title>
@@ -163,6 +163,44 @@
   .m-geo i{width:7px;height:7px;border-radius:50%;background:var(--ok);display:inline-block}
   .m-foot{padding:10px;border-top:1px solid var(--line);display:flex;justify-content:space-around;font-size:10px;color:var(--ink-faint)}
   .m-foot span.on{color:var(--teal);font-weight:600}
+  /* role switcher */
+  .role-line{display:flex;align-items:center;gap:7px;font-size:12px;color:#B9C9DA}
+  .role-line select{font:600 12.5px var(--sans);background:var(--navy2);color:#fff;border:1px solid #2B4A6F;border-radius:6px;padding:6px 8px}
+
+  /* forms */
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:12px 0 14px}
+  .f label{display:block;font:600 11px/1.3 var(--sans);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:5px}
+  .f input,.f select,.f textarea{width:100%;font:13.5px var(--sans);padding:9px;border:1px solid var(--line);border-radius:6px;background:#fff}
+  .f textarea{resize:vertical;min-height:64px}
+  .gate{border:1px dashed var(--line);border-radius:8px;background:#F7F9FC;padding:16px;font-size:13.5px;color:var(--ink-soft)}
+
+  /* workflow board */
+  .board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(185px,1fr);gap:10px;overflow-x:auto;padding-bottom:6px}
+  .bcol{background:#EDF1F7;border-radius:8px;padding:10px;min-height:220px}
+  .bcol h4{font:600 11px/1 var(--sans);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:10px;display:flex;justify-content:space-between}
+  .bcol h4 .cnt{color:var(--ink-faint)}
+  .cardk{background:#fff;border:1px solid var(--line);border-radius:6px;padding:9px 10px;margin-bottom:8px;font-size:12.5px}
+  .cardk b{display:block;margin-bottom:2px}
+  .cardk .meta{color:var(--ink-faint);font-size:11px;margin-bottom:6px}
+  .cardk .mv{display:flex;gap:6px;justify-content:flex-end}
+  .cardk .mv button{font:600 12px var(--sans);border:1px solid var(--line);background:#F7F9FC;border-radius:5px;padding:3px 9px;cursor:pointer}
+  .cardk .mv button:hover{background:var(--teal);color:#fff;border-color:var(--teal)}
+  .pri-High{border-left:3px solid var(--late)} .pri-Medium{border-left:3px solid var(--warn)} .pri-Low{border-left:3px solid var(--ok)}
+
+  /* RACI */
+  .raci td.cell{cursor:pointer;text-align:center;font:700 12.5px var(--sans);user-select:none;min-width:56px}
+  .raci td.cell:hover{outline:2px solid var(--teal);outline-offset:-2px}
+  .r-R{background:#E3F1E9;color:var(--ok)} .r-A{background:#F3E6CF;color:#8A6512}
+  .r-C{background:#E0EBF0;color:var(--navy)} .r-I{background:#EEF0F3;color:var(--ink-faint)}
+  .raci-warn{font-size:12px;color:var(--warn)}
+
+  /* toast */
+  #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--navy);color:#fff;
+    font:600 13.5px var(--sans);padding:11px 20px;border-radius:8px;box-shadow:0 10px 26px rgba(14,42,71,.35);
+    opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:60;max-width:88vw}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media(prefers-reduced-motion:reduce){#toast{transition:none}}
+
   .install{max-width:760px;margin:22px auto 0}
   .install ol{margin:8px 0 0 20px;font-size:13.5px}
   .install li{margin-bottom:5px}
@@ -176,11 +214,22 @@
       <div><b>Praveno</b><small>Prepared for Thedcf · Time · Projects · People</small></div>
     </div>
     <span class="demo-chip">Interactive demo · simulated data</span>
+    <span class="role-line"><label for="roleSel">Viewing as</label>
+      <select id="roleSel">
+        <option>CEO</option><option selected>Director</option><option>Manager</option><option>Employee</option>
+      </select></span>
   </div>
   <nav class="tabs" role="tablist" aria-label="Demo sections">
     <button role="tab" aria-selected="true" aria-controls="tab-dash" id="tabbtn-dash">Dashboard</button>
+    <button role="tab" aria-selected="false" aria-controls="tab-board" id="tabbtn-board">Workflow Board</button>
+    <button role="tab" aria-selected="false" aria-controls="tab-assign" id="tabbtn-assign">Assign Tasks</button>
     <button role="tab" aria-selected="false" aria-controls="tab-plan" id="tabbtn-plan">Project Plan · Gantt</button>
     <button role="tab" aria-selected="false" aria-controls="tab-time" id="tabbtn-time">Time &amp; Attendance</button>
+    <button role="tab" aria-selected="false" aria-controls="tab-raci" id="tabbtn-raci">Team RACI</button>
+    <button role="tab" aria-selected="false" aria-controls="tab-intake" id="tabbtn-intake">Intake</button>
+    <button role="tab" aria-selected="false" aria-controls="tab-approvals" id="tabbtn-approvals">Approvals</button>
+    <button role="tab" aria-selected="false" aria-controls="tab-files" id="tabbtn-files">Files</button>
+    <button role="tab" aria-selected="false" aria-controls="tab-reports" id="tabbtn-reports">Reports · Audit</button>
     <button role="tab" aria-selected="false" aria-controls="tab-mobile" id="tabbtn-mobile">Mobile Apps</button>
   </nav>
 </header>
@@ -289,6 +338,148 @@
   </div>
 </section>
 
+<!-- ══════════════ WORKFLOW BOARD ══════════════ -->
+<section class="panel" id="tab-board" role="tabpanel" aria-labelledby="tabbtn-board">
+  <h2 class="pg">Workflow board</h2>
+  <p class="pg-sub">Every piece of work moves left to right: intake requests arrive, assigned tasks progress through
+     review and approval to done. Use the ‹ › buttons to move a card — every move is recorded in the audit log.</p>
+  <div class="card"><div class="board" id="board"></div></div>
+</section>
+
+<!-- ══════════════ ASSIGN TASKS ══════════════ -->
+<section class="panel" id="tab-assign" role="tabpanel" aria-labelledby="tabbtn-assign">
+  <h2 class="pg">Assign tasks</h2>
+  <p class="pg-sub">CEO, Director and Manager roles can assign work to any team member — switch the
+     "Viewing as" role in the header to see how access changes. New assignments land on the workflow board
+     and in the audit log immediately.</p>
+  <div class="card" id="assignGateWrap">
+    <div class="gate" id="assignGate" hidden>You are viewing as <b>Employee</b>. Only CEO, Director and Manager
+      roles can assign tasks — switch roles in the header to try it.</div>
+    <form id="assignForm">
+      <div class="form-grid">
+        <div class="f"><label for="afTitle">Task title</label><input id="afTitle" required maxlength="80" placeholder="e.g. Draft launch press release"></div>
+        <div class="f"><label for="afProj">Project</label><select id="afProj"></select></div>
+        <div class="f"><label for="afTo">Assign to</label><select id="afTo"></select></div>
+        <div class="f"><label for="afDue">Due (week)</label><select id="afDue"></select></div>
+        <div class="f"><label for="afPri">Priority</label><select id="afPri"><option>High</option><option selected>Medium</option><option>Low</option></select></div>
+      </div>
+      <button class="btn" type="submit">Assign task</button>
+    </form>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <h3>Current assignments</h3>
+    <div class="h-sub">Assigned by leadership in this demo session — moves through the workflow board stages</div>
+    <div class="tbl"><table id="assignTable">
+      <thead><tr><th>Task</th><th>Project</th><th>Assigned to</th><th>By</th><th class="num">Due</th><th>Priority</th><th>Stage</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ══════════════ TEAM RACI ══════════════ -->
+<section class="panel" id="tab-raci" role="tabpanel" aria-labelledby="tabbtn-raci">
+  <h2 class="pg">Team RACI matrix</h2>
+  <p class="pg-sub">Who is <b>R</b>esponsible, <b>A</b>ccountable, <b>C</b>onsulted and <b>I</b>nformed for each
+     deliverable. Click any cell to cycle its letter — changes are saved and audited. Best practice: exactly one
+     Accountable per row.</p>
+  <div class="card">
+    <div class="tbl"><table class="raci" id="raciTable"><thead></thead><tbody></tbody></table></div>
+    <div class="legend" style="margin-top:10px">
+      <span><span class="chip r-R" style="border-radius:4px">R</span> Responsible — does the work</span>
+      <span><span class="chip r-A" style="border-radius:4px">A</span> Accountable — owns the outcome</span>
+      <span><span class="chip r-C" style="border-radius:4px">C</span> Consulted — two-way input</span>
+      <span><span class="chip r-I" style="border-radius:4px">I</span> Informed — kept up to date</span>
+    </div>
+    <p class="raci-warn" id="raciWarn"></p>
+  </div>
+</section>
+
+<!-- ══════════════ INTAKE ══════════════ -->
+<section class="panel" id="tab-intake" role="tabpanel" aria-labelledby="tabbtn-intake">
+  <h2 class="pg">Intake — work requests</h2>
+  <p class="pg-sub">Anyone on the team submits requests here; each one enters the approvals queue
+     (Manager review, then Director sign-off) and appears in the Intake column of the workflow board.</p>
+  <div class="card">
+    <form id="intakeForm">
+      <div class="form-grid">
+        <div class="f"><label for="ifType">Request type</label><select id="ifType"><option>New project</option><option selected>Change request</option><option>Creative request</option><option>Budget request</option></select></div>
+        <div class="f"><label for="ifTitle">Title</label><input id="ifTitle" required maxlength="80" placeholder="e.g. Add radio spots to media plan"></div>
+        <div class="f"><label for="ifReq">Requested by</label><select id="ifReq"></select></div>
+        <div class="f"><label for="ifPri">Priority</label><select id="ifPri"><option>High</option><option selected>Medium</option><option>Low</option></select></div>
+      </div>
+      <div class="f" style="margin-bottom:14px"><label for="ifDesc">Description</label><textarea id="ifDesc" maxlength="400" placeholder="What is needed and why"></textarea></div>
+      <button class="btn" type="submit">Submit request</button>
+    </form>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <h3>Submitted requests</h3>
+    <div class="h-sub">Status updates as approvals progress</div>
+    <div class="tbl"><table id="intakeTable">
+      <thead><tr><th>Request</th><th>Type</th><th>Requested by</th><th>Priority</th><th>Status</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ══════════════ APPROVALS ══════════════ -->
+<section class="panel" id="tab-approvals" role="tabpanel" aria-labelledby="tabbtn-approvals">
+  <h2 class="pg">Approvals queue</h2>
+  <p class="pg-sub">Two-step routing: a Manager reviews first, then a Director (or the CEO) gives final sign-off.
+     Buttons enable only for the role whose turn it is — switch "Viewing as" in the header to act each step.</p>
+  <div class="card">
+    <div class="tbl"><table id="apprTable">
+      <thead><tr><th>Item</th><th>Type</th><th>Requested by</th><th>Stage</th><th>Decision</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <p class="note">Every decision is time-stamped against the acting role in the audit log — dispute-grade traceability.</p>
+  </div>
+</section>
+
+<!-- ══════════════ FILES ══════════════ -->
+<section class="panel" id="tab-files" role="tabpanel" aria-labelledby="tabbtn-files">
+  <h2 class="pg">Files &amp; attachments</h2>
+  <p class="pg-sub">Attach briefs, decks and trackers to a project so the team always works from the latest version.
+     This demo records file details on your device only — nothing is uploaded anywhere.</p>
+  <div class="card">
+    <div class="form-grid">
+      <div class="f"><label for="fileProj">Attach to project</label><select id="fileProj"></select></div>
+      <div class="f"><label for="filePick">Choose file(s)</label><input id="filePick" type="file" multiple></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <h3>Attached files</h3>
+    <div class="h-sub">Name, owner and project — with remove control</div>
+    <div class="tbl"><table id="filesTable">
+      <thead><tr><th>File</th><th class="num">Size</th><th>Project</th><th>Added by</th><th>When</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ══════════════ REPORTS & AUDIT ══════════════ -->
+<section class="panel" id="tab-reports" role="tabpanel" aria-labelledby="tabbtn-reports">
+  <h2 class="pg">Reports &amp; audit log</h2>
+  <p class="pg-sub">Live counts across the workspace, one-click CSV exports for payroll and status meetings,
+     and a tamper-evident audit trail of every action taken in this demo.</p>
+  <div class="grid-kpi" id="repKpis"></div>
+  <div class="card">
+    <h3>Exports</h3>
+    <div class="h-sub">Downloads generate on your device from current demo data</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn ghost" id="expAssign" type="button">Export assignments (CSV)</button>
+      <button class="btn ghost" id="expAudit" type="button">Export audit log (CSV)</button>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <h3>Audit log</h3>
+    <div class="h-sub">Newest first · records clock events, assignments, board moves, approvals, RACI edits and file changes</div>
+    <div class="tbl"><table id="auditTable">
+      <thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Detail</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</section>
+
 <!-- ══════════════ MOBILE ══════════════ -->
 <section class="panel" id="tab-mobile" role="tabpanel" aria-labelledby="tabbtn-mobile">
   <h2 class="pg">Mobile apps — iPhone &amp; Android</h2>
@@ -334,9 +525,18 @@
     <p class="note">Pilot builds for the Apple App Store (via TestFlight) and Google Play are prepared during the
       pilot phase; your team will receive invitations by email.</p>
   </div>
+  <div class="card install" style="margin-top:14px">
+    <h3>Demo links</h3>
+    <ol>
+      <li><b>Web (HTML):</b> <a href="https://ipaja80.github.io/praveno-web/thedcf/">ipaja80.github.io/praveno-web/thedcf/</a></li>
+      <li><b>Android app:</b> <a href="https://github.com/Ipaja80/praveno-web/releases/latest">download the Praveno demo app (APK)</a></li>
+      <li><b>Apple (iPhone/iPad):</b> open the web link in Safari → Share → <b>Add to Home Screen</b></li>
+    </ol>
+  </div>
 </section>
 
 </main>
+<div id="toast" role="status" aria-live="polite"></div>
 <footer>Praveno · Interactive proof of concept prepared for Thedcf · All names, projects and figures are simulated demo data.</footer>
 
 <script>
@@ -649,6 +849,7 @@ function toggleClock(){
   if(clock.in){clock.sessions.push({in:clock.startedAt,out:Date.now()});clock.in=false;clock.startedAt=null;}
   else{clock.in=true;clock.startedAt=Date.now();}
   persist();render();
+  if(window.onClockToggle)window.onClockToggle(clock.in);
 }
 document.getElementById('clockBtn').addEventListener('click',toggleClock);
 document.querySelectorAll('[data-mbtn]').forEach(function(b){b.addEventListener('click',toggleClock);});
@@ -686,6 +887,245 @@ render();
   }
   me();setInterval(me,5000);
 })();
+window.DEMO={weekHours:function(){var now=new Date(),ws=weekStart(now);return classifyRange(ws,now).total;}};
+})();
+</script>
+<script>
+(function(){
+'use strict';
+function $(s){return document.querySelector(s);}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+var EMP=['Thandi Nkosi','Sipho Dlamini','Lerato Mokoena','Johan van der Merwe','Ayesha Patel','Kagiso Molefe','Naledi Khumalo','Demo Employee'];
+var PROJECTS=['Ubuntu Bank Spring Launch','Karoo Tourism Site Refresh','Brand Asset Library','New / Other'];
+var COLS=['Intake','To do','In progress','Review','Approved','Done'];
+var RROWS=['Campaign strategy','Creative concepts','Asset production','Media plan & booking','Website build','QA & site launch','Payroll & wage run'];
+var RCOLS=['CEO','Director','Project Lead','Designer','Developer','Copywriter','HR'];
+var RSEED=[['I','A','R','','','',''],['','C','A','R','','C',''],['','I','A','R','','C',''],['','A','R','','','',''],['','I','A','C','R','',''],['','A','C','','R','',''],['I','A','','','','','R']];
+var KEY='praveno_thedcf_ops_v1';
+var db=null;
+try{db=JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){}
+if(!db||db.v!==1){
+  db={v:1,seq:100,
+    assigned:[
+      {id:'A1',title:'Refresh media budget tracker',proj:PROJECTS[0],to:'Johan van der Merwe',by:'Director',due:8,pri:'High',col:'In progress'},
+      {id:'A2',title:'Shot list for launch film',proj:PROJECTS[0],to:'Sipho Dlamini',by:'Manager',due:7,pri:'Medium',col:'Review'},
+      {id:'A3',title:'Karoo photography licensing',proj:PROJECTS[1],to:'Thandi Nkosi',by:'Director',due:9,pri:'Low',col:'To do'}
+    ],
+    intake:[
+      {id:'I1',type:'Change request',title:'Add Instagram Reels deliverable',req:'Thandi Nkosi',pri:'Medium',desc:'Client asked for 3 Reels per week during launch month.',stage:1,status:'pending'},
+      {id:'I2',type:'Budget request',title:'Overtime budget for build sprint',req:'Kagiso Molefe',pri:'High',desc:'Two weeks of approved overtime to recover the Karoo build slip.',stage:2,status:'pending'}
+    ],
+    files:[{id:'F1',name:'UbuntuBank_Brief_v3.docx',size:'412 KB',proj:PROJECTS[0],by:'Ayesha Patel',t:'Earlier this week'}],
+    raci:RSEED,
+    audit:[{t:new Date().toLocaleString('en-ZA'),who:'System',act:'Demo seeded',det:'Sample assignments, requests and files loaded'}]
+  };
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){}}
+function role(){return $('#roleSel').value;}
+function toast(msg){var t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast._x);toast._x=setTimeout(function(){t.classList.remove('show');},2600);}
+function audit(who,act,det){db.audit.unshift({t:new Date().toLocaleString('en-ZA'),who:who,act:act,det:det});if(db.audit.length>400)db.audit.pop();save();renderAudit();renderReports();}
+window.onClockToggle=function(isIn){audit('Demo Employee',isIn?'Clock in':'Clock out','Time & Attendance tab');};
+
+/* populate selects */
+function fill(sel,items){$(sel).innerHTML=items.map(function(i){return '<option>'+esc(i)+'</option>';}).join('');}
+fill('#afProj',PROJECTS);fill('#afTo',EMP);fill('#ifReq',EMP);fill('#fileProj',PROJECTS.slice(0,3));
+$('#afDue').innerHTML=Array.from({length:12},function(_,i){return '<option'+(i===7?' selected':'')+'>'+(i+1)+'</option>';}).join('');
+
+/* ── assign ── */
+function gateAssign(){var emp=role()==='Employee';$('#assignGate').hidden=!emp;$('#assignForm').style.display=emp?'none':'';}
+$('#roleSel').addEventListener('change',function(){gateAssign();renderApprovals();});
+$('#assignForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  var a={id:'A'+(db.seq++),title:$('#afTitle').value.trim(),proj:$('#afProj').value,to:$('#afTo').value,
+         by:role(),due:+$('#afDue').value,pri:$('#afPri').value,col:'To do'};
+  if(!a.title)return;
+  db.assigned.push(a);save();
+  audit(role(),'Task assigned','"'+a.title+'" → '+a.to+' (due week '+a.due+', '+a.pri+')');
+  $('#afTitle').value='';renderAssign();renderBoard();
+  toast('Task assigned to '+a.to);
+});
+function renderAssign(){
+  $('#assignTable tbody').innerHTML=db.assigned.map(function(a){
+    return '<tr><td><b>'+esc(a.title)+'</b></td><td style="color:var(--ink-soft)">'+esc(a.proj)+'</td><td>'+esc(a.to)+'</td><td>'+esc(a.by)+'</td>'+
+      '<td class="num">Week '+a.due+'</td><td><span class="chip '+(a.pri==='High'?'late':a.pri==='Medium'?'warn':'ok')+'">'+a.pri+'</span></td>'+
+      '<td><span class="chip '+(a.col==='Done'||a.col==='Approved'?'done':'ok')+'">'+esc(a.col)+'</span></td></tr>';
+  }).join('')||'<tr><td colspan="7" style="color:var(--ink-faint)">No assignments yet</td></tr>';
+}
+
+/* ── board ── */
+function boardCards(){
+  var cards=db.assigned.map(function(a){return {ref:a,kind:'task',title:a.title,meta:a.to+' · wk '+a.due+' · '+a.proj,pri:a.pri,col:a.col};});
+  db.intake.forEach(function(i){
+    if(i.status==='pending')cards.push({ref:i,kind:'intake',title:i.title,meta:i.type+' · '+i.req,pri:i.pri,col:'Intake'});
+    else if(i.status==='approved')cards.push({ref:i,kind:'intake',title:i.title,meta:i.type+' · approved',pri:i.pri,col:'Approved'});
+  });
+  return cards;
+}
+function renderBoard(){
+  var cards=boardCards();
+  $('#board').innerHTML=COLS.map(function(c){
+    var inCol=cards.filter(function(k){return k.col===c;});
+    return '<div class="bcol"><h4>'+c+'<span class="cnt">'+inCol.length+'</span></h4>'+
+      inCol.map(function(k){
+        var ci=COLS.indexOf(c),canMove=k.kind==='task';
+        return '<div class="cardk pri-'+k.pri+'"><b>'+esc(k.title)+'</b><div class="meta">'+esc(k.meta)+'</div>'+
+          (canMove?'<div class="mv">'+(ci>1?'<button type="button" data-mv="-1" data-id="'+k.ref.id+'" aria-label="Move back">‹</button>':'')+
+          (ci<COLS.length-1?'<button type="button" data-mv="1" data-id="'+k.ref.id+'" aria-label="Move forward">›</button>':'')+'</div>':
+          '<div class="meta" style="margin:0">'+(k.col==='Intake'?'awaiting approval':'')+'</div>')+'</div>';
+      }).join('')+'</div>';
+  }).join('');
+}
+$('#board').addEventListener('click',function(e){
+  var b=e.target.closest('button[data-mv]');if(!b)return;
+  var a=db.assigned.find(function(x){return x.id===b.getAttribute('data-id');});if(!a)return;
+  var ni=COLS.indexOf(a.col)+ +b.getAttribute('data-mv');
+  ni=Math.max(1,Math.min(COLS.length-1,ni));
+  var from=a.col;a.col=COLS[ni];save();
+  audit(role(),'Board move','"'+a.title+'": '+from+' → '+a.col);
+  renderBoard();renderAssign();
+});
+
+/* ── RACI ── */
+var CYCLE=['','R','A','C','I'];
+function renderRaci(){
+  $('#raciTable thead').innerHTML='<tr><th>Deliverable</th>'+RCOLS.map(function(c){return '<th style="text-align:center">'+c+'</th>';}).join('')+'</tr>';
+  $('#raciTable tbody').innerHTML=RROWS.map(function(r,ri){
+    return '<tr><td><b>'+r+'</b></td>'+RCOLS.map(function(_,ci){
+      var v=db.raci[ri][ci];
+      return '<td class="cell r-'+v+'" data-r="'+ri+'" data-c="'+ci+'" role="button" tabindex="0" aria-label="'+r+' / '+RCOLS[ci]+': '+(v||'none')+'">'+v+'</td>';
+    }).join('')+'</tr>';
+  }).join('');
+  var bad=RROWS.filter(function(_,ri){return db.raci[ri].filter(function(v){return v==='A';}).length!==1;});
+  $('#raciWarn').textContent=bad.length?('⚠ Rows without exactly one Accountable: '+bad.join(', ')):'';
+}
+function cycleCell(td){
+  var ri=+td.getAttribute('data-r'),ci=+td.getAttribute('data-c');
+  var v=db.raci[ri][ci],nv=CYCLE[(CYCLE.indexOf(v)+1)%CYCLE.length];
+  db.raci[ri][ci]=nv;save();
+  audit(role(),'RACI updated',RROWS[ri]+' / '+RCOLS[ci]+' → '+(nv||'cleared'));
+  renderRaci();
+}
+$('#raciTable').addEventListener('click',function(e){var td=e.target.closest('td.cell');if(td)cycleCell(td);});
+$('#raciTable').addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('cell')){e.preventDefault();cycleCell(e.target);}});
+
+/* ── intake ── */
+$('#intakeForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  var i={id:'I'+(db.seq++),type:$('#ifType').value,title:$('#ifTitle').value.trim(),req:$('#ifReq').value,
+         pri:$('#ifPri').value,desc:$('#ifDesc').value.trim(),stage:1,status:'pending'};
+  if(!i.title)return;
+  db.intake.push(i);save();
+  audit(i.req,'Request submitted',i.type+': "'+i.title+'"');
+  $('#ifTitle').value='';$('#ifDesc').value='';
+  renderIntake();renderApprovals();renderBoard();
+  toast('Request submitted — routed to Manager review');
+});
+function intakeStatus(i){
+  if(i.status==='approved')return '<span class="chip ok">Approved</span>';
+  if(i.status==='rejected')return '<span class="chip late">Rejected</span>';
+  return '<span class="chip warn">'+(i.stage===1?'Pending — Manager review':'Pending — Director sign-off')+'</span>';
+}
+function renderIntake(){
+  $('#intakeTable tbody').innerHTML=db.intake.map(function(i){
+    return '<tr><td><b>'+esc(i.title)+'</b>'+(i.desc?'<div style="font-size:12px;color:var(--ink-faint)">'+esc(i.desc)+'</div>':'')+'</td>'+
+      '<td>'+esc(i.type)+'</td><td>'+esc(i.req)+'</td><td><span class="chip '+(i.pri==='High'?'late':i.pri==='Medium'?'warn':'ok')+'">'+i.pri+'</span></td>'+
+      '<td>'+intakeStatus(i)+'</td></tr>';
+  }).join('')||'<tr><td colspan="5" style="color:var(--ink-faint)">No requests yet</td></tr>';
+}
+
+/* ── approvals ── */
+function canAct(i){
+  var r=role();
+  if(i.status!=='pending')return false;
+  if(i.stage===1)return r==='Manager'||r==='Director'||r==='CEO';
+  return r==='Director'||r==='CEO';
+}
+function renderApprovals(){
+  var pending=db.intake.filter(function(i){return i.status==='pending';});
+  var decided=db.intake.filter(function(i){return i.status!=='pending';});
+  $('#apprTable tbody').innerHTML=pending.concat(decided).map(function(i){
+    var act=canAct(i);
+    var btns=i.status==='pending'?
+      '<div style="display:flex;gap:8px"><button class="btn" style="padding:7px 14px;font-size:13px" type="button" data-appr="ok" data-id="'+i.id+'"'+(act?'':' disabled title="Switch to the acting role to decide"')+'>Approve</button>'+
+      '<button class="btn out" style="padding:7px 14px;font-size:13px" type="button" data-appr="no" data-id="'+i.id+'"'+(act?'':' disabled')+'>Reject</button></div>':
+      intakeStatus(i);
+    return '<tr><td><b>'+esc(i.title)+'</b></td><td>'+esc(i.type)+'</td><td>'+esc(i.req)+'</td>'+
+      '<td>'+(i.status==='pending'?(i.stage===1?'1 · Manager review':'2 · Director sign-off'):'Complete')+'</td><td>'+btns+'</td></tr>';
+  }).join('')||'<tr><td colspan="5" style="color:var(--ink-faint)">Queue is empty</td></tr>';
+}
+$('#apprTable').addEventListener('click',function(e){
+  var b=e.target.closest('button[data-appr]');if(!b||b.disabled)return;
+  var i=db.intake.find(function(x){return x.id===b.getAttribute('data-id');});if(!i)return;
+  if(b.getAttribute('data-appr')==='no'){i.status='rejected';audit(role(),'Request rejected','"'+i.title+'" at stage '+i.stage);toast('Request rejected');}
+  else if(i.stage===1){i.stage=2;audit(role(),'Stage 1 approved','"'+i.title+'" → Director sign-off');toast('Approved — now awaiting Director sign-off');}
+  else{i.status='approved';audit(role(),'Request approved','"'+i.title+'" fully approved');toast('Request fully approved');}
+  save();renderApprovals();renderIntake();renderBoard();
+});
+
+/* ── files ── */
+function fmtSize(n){return n>1048576?(n/1048576).toFixed(1)+' MB':Math.max(1,Math.round(n/1024))+' KB';}
+$('#filePick').addEventListener('change',function(){
+  var proj=$('#fileProj').value;
+  [].slice.call(this.files).forEach(function(f){
+    db.files.push({id:'F'+(db.seq++),name:f.name,size:fmtSize(f.size),proj:proj,by:role(),t:new Date().toLocaleString('en-ZA')});
+    audit(role(),'File attached',f.name+' → '+proj);
+  });
+  this.value='';save();renderFiles();
+  toast('File attached');
+});
+function renderFiles(){
+  $('#filesTable tbody').innerHTML=db.files.map(function(f){
+    return '<tr><td><b>'+esc(f.name)+'</b></td><td class="num">'+esc(f.size)+'</td><td style="color:var(--ink-soft)">'+esc(f.proj)+'</td>'+
+      '<td>'+esc(f.by)+'</td><td style="font-size:12px;color:var(--ink-faint)">'+esc(f.t)+'</td>'+
+      '<td><button class="btn ghost" style="padding:5px 10px;font-size:12px" type="button" data-del="'+f.id+'">Remove</button></td></tr>';
+  }).join('')||'<tr><td colspan="6" style="color:var(--ink-faint)">No files attached yet</td></tr>';
+}
+$('#filesTable').addEventListener('click',function(e){
+  var b=e.target.closest('button[data-del]');if(!b)return;
+  var ix=db.files.findIndex(function(f){return f.id===b.getAttribute('data-del');});
+  if(ix>=0){audit(role(),'File removed',db.files[ix].name);db.files.splice(ix,1);save();renderFiles();}
+});
+
+/* ── reports & audit ── */
+function renderReports(){
+  var counts={};COLS.forEach(function(c){counts[c]=0;});
+  boardCards().forEach(function(k){counts[k.col]=(counts[k.col]||0)+1;});
+  var pend=db.intake.filter(function(i){return i.status==='pending';}).length;
+  var wh=window.DEMO?window.DEMO.weekHours().toFixed(1):'—';
+  var kpis=[
+    {lbl:'Cards on the board',val:String(boardCards().length),sub:counts['In progress']+' in progress · '+counts['Done']+' done'},
+    {lbl:'Approvals pending',val:String(pend),sub:'awaiting a decision',cls:pend?'warn':''},
+    {lbl:'Files attached',val:String(db.files.length),sub:'across all projects'},
+    {lbl:'Your hours this week',val:wh+' h',sub:'from Time & Attendance'},
+    {lbl:'Audit entries',val:String(db.audit.length),sub:'tamper-evident trail'}
+  ];
+  $('#repKpis').innerHTML=kpis.map(function(k){
+    return '<div class="card kpi '+(k.cls||'')+'"><div class="lbl">'+k.lbl+'</div><div class="val num">'+k.val+'</div><div class="sub">'+k.sub+'</div></div>';
+  }).join('');
+}
+function renderAudit(){
+  $('#auditTable tbody').innerHTML=db.audit.slice(0,60).map(function(a){
+    return '<tr><td style="white-space:nowrap;font-size:12px" class="num">'+esc(a.t)+'</td><td><b>'+esc(a.who)+'</b></td><td>'+esc(a.act)+'</td><td style="color:var(--ink-soft)">'+esc(a.det)+'</td></tr>';
+  }).join('');
+}
+function csv(rows,name){
+  var body=rows.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\r\n');
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([body],{type:'text/csv'}));a.download=name;
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},400);
+}
+$('#expAssign').addEventListener('click',function(){
+  csv([['Task','Project','Assigned to','Assigned by','Due week','Priority','Stage']].concat(
+    db.assigned.map(function(a){return [a.title,a.proj,a.to,a.by,a.due,a.pri,a.col];})),'praveno-thedcf-assignments.csv');
+  audit(role(),'Export','Assignments CSV downloaded');
+});
+$('#expAudit').addEventListener('click',function(){
+  csv([['Time','Actor','Action','Detail']].concat(db.audit.map(function(a){return [a.t,a.who,a.act,a.det];})),'praveno-thedcf-audit.csv');
+});
+
+/* init */
+gateAssign();renderAssign();renderBoard();renderRaci();renderIntake();renderApprovals();renderFiles();renderReports();renderAudit();
 })();
 </script>
 
