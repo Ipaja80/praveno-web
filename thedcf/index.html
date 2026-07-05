@@ -325,9 +325,18 @@
   </div>
   <div class="card" style="margin-top:14px">
     <h3>Current assignments</h3>
-    <div class="h-sub">Assigned by leadership in this demo session — moves through the workflow board stages</div>
+    <div class="h-sub">Assigned by leadership in this demo session — leadership approves or rejects each task;
+      approval moves it to the Approved column, rejection sends it back for rework</div>
     <div class="tbl"><table id="assignTable">
-      <thead><tr><th>Task</th><th>Project</th><th>Assigned to</th><th>By</th><th class="num">Due</th><th>Priority</th><th>Stage</th></tr></thead>
+      <thead><tr><th>Task</th><th>Project</th><th>Assigned to</th><th>By</th><th class="num">Due</th><th>Priority</th><th>Stage</th><th>Decision</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <h3>Decisions by resource</h3>
+    <div class="h-sub">Approved and rejected task counts per team member — updates live as leadership decides</div>
+    <div class="tbl"><table id="resTable">
+      <thead><tr><th>Resource</th><th class="num">Tasks assigned</th><th class="num">Approved</th><th class="num">Rejected</th><th class="num">Pending</th><th>Standing</th></tr></thead>
       <tbody></tbody>
     </table></div>
   </div>
@@ -906,12 +915,16 @@ var RSEED=[['I','A','R','','','',''],['','C','A','R','','C',''],['','I','A','R',
 var KEY='praveno_thedcf_ops_v1';
 var db=null;
 try{db=JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){}
-if(!db||db.v!==1){
-  db={v:1,seq:100,
+if(db&&db.v===1){ // migrate: add decision state to existing assignments
+  db.v=2;(db.assigned||[]).forEach(function(a){a.appr=a.col==='Approved'||a.col==='Done'?'approved':'pending';});
+}
+if(!db||db.v!==2){
+  db={v:2,seq:100,
     assigned:[
-      {id:'A1',title:'Refresh media budget tracker',proj:PROJECTS[0],to:'Johan van der Merwe',by:'Director',due:8,pri:'High',col:'In progress'},
-      {id:'A2',title:'Shot list for launch film',proj:PROJECTS[0],to:'Sipho Dlamini',by:'Manager',due:7,pri:'Medium',col:'Review'},
-      {id:'A3',title:'Karoo photography licensing',proj:PROJECTS[1],to:'Thandi Nkosi',by:'Director',due:9,pri:'Low',col:'To do'}
+      {id:'A1',title:'Refresh media budget tracker',proj:PROJECTS[0],to:'Johan van der Merwe',by:'Director',due:8,pri:'High',col:'Approved',appr:'approved'},
+      {id:'A2',title:'Shot list for launch film',proj:PROJECTS[0],to:'Sipho Dlamini',by:'Manager',due:7,pri:'Medium',col:'Review',appr:'pending'},
+      {id:'A3',title:'Karoo photography licensing',proj:PROJECTS[1],to:'Thandi Nkosi',by:'Director',due:9,pri:'Low',col:'To do',appr:'pending'},
+      {id:'A4',title:'Social calendar refresh',proj:PROJECTS[2],to:'Lerato Mokoena',by:'Manager',due:6,pri:'Medium',col:'To do',appr:'rejected'}
     ],
     intake:[
       {id:'I1',type:'Change request',title:'Add Instagram Reels deliverable',req:'Thandi Nkosi',pri:'Medium',desc:'Client asked for 3 Reels per week during launch month.',stage:1,status:'pending'},
@@ -935,23 +948,79 @@ $('#afDue').innerHTML=Array.from({length:12},function(_,i){return '<option'+(i==
 
 /* ── assign ── */
 function gateAssign(){var emp=role()==='Employee';$('#assignGate').hidden=!emp;$('#assignForm').style.display=emp?'none':'';}
-$('#roleSel').addEventListener('change',function(){gateAssign();renderApprovals();});
+$('#roleSel').addEventListener('change',function(){gateAssign();renderApprovals();renderAssign();});
 $('#assignForm').addEventListener('submit',function(e){
   e.preventDefault();
   var a={id:'A'+(db.seq++),title:$('#afTitle').value.trim(),proj:$('#afProj').value,to:$('#afTo').value,
-         by:role(),due:+$('#afDue').value,pri:$('#afPri').value,col:'To do'};
+         by:role(),due:+$('#afDue').value,pri:$('#afPri').value,col:'To do',appr:'pending'};
   if(!a.title)return;
   db.assigned.push(a);save();
   audit(role(),'Task assigned','"'+a.title+'" → '+a.to+' (due week '+a.due+', '+a.pri+')');
   $('#afTitle').value='';renderAssign();renderBoard();
   toast('Task assigned to '+a.to);
 });
+function apprChip(a){
+  return a.appr==='approved'?'<span class="chip ok">Approved</span>':
+         a.appr==='rejected'?'<span class="chip late">Rejected</span>':
+         '<span class="chip warn">Pending</span>';
+}
 function renderAssign(){
+  var lead=role()!=='Employee';
   $('#assignTable tbody').innerHTML=db.assigned.map(function(a){
+    var dec=apprChip(a);
+    if(lead&&a.appr==='pending'){
+      dec+='<div style="display:flex;gap:6px;margin-top:6px">'+
+        '<button class="btn" style="padding:5px 11px;font-size:12px" type="button" data-adec="ok" data-id="'+a.id+'">Approve</button>'+
+        '<button class="btn out" style="padding:5px 11px;font-size:12px" type="button" data-adec="no" data-id="'+a.id+'">Reject</button></div>';
+    }
     return '<tr><td><b>'+esc(a.title)+'</b></td><td style="color:var(--ink-soft)">'+esc(a.proj)+'</td><td>'+esc(a.to)+'</td><td>'+esc(a.by)+'</td>'+
       '<td class="num">Week '+a.due+'</td><td><span class="chip '+(a.pri==='High'?'late':a.pri==='Medium'?'warn':'ok')+'">'+a.pri+'</span></td>'+
-      '<td><span class="chip '+(a.col==='Done'||a.col==='Approved'?'done':'ok')+'">'+esc(a.col)+'</span></td></tr>';
-  }).join('')||'<tr><td colspan="7" style="color:var(--ink-faint)">No assignments yet</td></tr>';
+      '<td><span class="chip '+(a.col==='Done'||a.col==='Approved'?'done':'ok')+'">'+esc(a.col)+'</span></td><td>'+dec+'</td></tr>';
+  }).join('')||'<tr><td colspan="8" style="color:var(--ink-faint)">No assignments yet</td></tr>';
+  renderResSummary();renderDashDecisions();
+}
+$('#assignTable').addEventListener('click',function(e){
+  var b=e.target.closest('button[data-adec]');if(!b)return;
+  var a=db.assigned.find(function(x){return x.id===b.getAttribute('data-id');});if(!a||a.appr!=='pending')return;
+  if(b.getAttribute('data-adec')==='ok'){
+    a.appr='approved';a.col='Approved';
+    audit(role(),'Task approved','"'+a.title+'" ('+a.to+') moved to Approved');
+    toast('Task approved — '+a.to+' notified');
+  }else{
+    a.appr='rejected';a.col='To do';
+    audit(role(),'Task rejected','"'+a.title+'" ('+a.to+') sent back for rework');
+    toast('Task rejected — sent back to '+a.to);
+  }
+  save();renderAssign();renderBoard();renderReports();
+});
+function renderResSummary(){
+  var by={};
+  db.assigned.forEach(function(a){
+    var r=by[a.to]||(by[a.to]={n:0,ok:0,no:0,p:0});
+    r.n++;if(a.appr==='approved')r.ok++;else if(a.appr==='rejected')r.no++;else r.p++;
+  });
+  var names=Object.keys(by);
+  $('#resTable tbody').innerHTML=names.map(function(n){
+    var r=by[n];
+    var standing=r.no>0?'<span class="chip late">Rework needed</span>':
+                  r.p>0?'<span class="chip warn">Awaiting decision</span>':
+                  '<span class="chip ok">All approved</span>';
+    return '<tr><td><b>'+esc(n)+'</b></td><td class="num">'+r.n+'</td><td class="num" style="color:var(--ok);font-weight:600">'+r.ok+'</td>'+
+      '<td class="num" style="color:var(--late);font-weight:600">'+r.no+'</td><td class="num">'+r.p+'</td><td>'+standing+'</td></tr>';
+  }).join('')||'<tr><td colspan="6" style="color:var(--ink-faint)">No assignments yet</td></tr>';
+}
+function renderDashDecisions(){
+  var ok=db.assigned.filter(function(a){return a.appr==='approved';}).length;
+  var no=db.assigned.filter(function(a){return a.appr==='rejected';}).length;
+  var p=db.assigned.filter(function(a){return a.appr==='pending';}).length;
+  var okEl=$('#kpiApproved'),noEl=$('#kpiRejected');
+  if(!okEl){
+    okEl=document.createElement('div');okEl.id='kpiApproved';okEl.className='card kpi ok';
+    noEl=document.createElement('div');noEl.id='kpiRejected';noEl.className='card kpi late';
+    var row=$('#kpiRow');row.appendChild(okEl);row.appendChild(noEl);
+  }
+  okEl.innerHTML='<div class="lbl">Tasks approved</div><div class="val num">'+ok+'</div><div class="sub">of '+db.assigned.length+' assigned tasks</div>';
+  noEl.innerHTML='<div class="lbl">Tasks rejected</div><div class="val num">'+no+'</div><div class="sub">'+(no?'sent back for rework':'none sent back')+(p?' · '+p+' pending':'')+'</div>';
 }
 
 /* ── board ── */
