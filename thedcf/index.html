@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0E2A47">
+<meta name="description" content="Praveno workforce and project management demo prepared for Thedcf — time and attendance, delivery dashboard, project Gantt, mobile apps.">
+</head>
+<body>
+<title>Praveno — Workforce &amp; Projects Demo for Thedcf</title>
+<style>
+  :root{
+    --navy:#0E2A47; --navy2:#173B60; --teal:#0F8B8D; --teal-dk:#0B6E70; --gold:#D9A441;
+    --surface:#F4F6F9; --card:#FFFFFF; --line:#DDE4EC;
+    --ink:#1B2733; --ink-soft:#4A5866; --ink-faint:#7C8894;
+    --ok:#2E8B57; --warn:#C77E1E; --late:#C0392B;
+    --sans:'Segoe UI',-apple-system,'Helvetica Neue',Arial,sans-serif;
+    --mono:Consolas,'Cascadia Mono',Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--surface);color:var(--ink);font:15px/1.55 var(--sans)}
+  button{font-family:var(--sans)}
+  button:focus-visible,select:focus-visible,input:focus-visible,[role=tab]:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+  .num{font-variant-numeric:tabular-nums}
+
+  /* App bar */
+  header.app{background:var(--navy);color:#fff;padding:0 20px}
+  .app-top{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:16px 0 10px;flex-wrap:wrap}
+  .logo{display:flex;align-items:center;gap:10px}
+  .logo .mark{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--teal),#15AFA4);
+    display:grid;place-items:center;font:700 15px var(--sans);color:#fff;letter-spacing:.02em}
+  .logo b{font:600 17px var(--sans)} .logo small{display:block;font-size:11px;color:#9FB3C8;letter-spacing:.08em;text-transform:uppercase}
+  .demo-chip{margin-left:auto;font:600 11px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:#F3D98B;
+    border:1px solid rgba(243,217,139,.5);padding:6px 10px;border-radius:999px}
+  nav.tabs{max-width:1180px;margin:0 auto;display:flex;gap:4px;overflow-x:auto}
+  nav.tabs [role=tab]{background:none;border:0;color:#B9C9DA;font:600 13.5px var(--sans);padding:11px 16px;cursor:pointer;
+    border-bottom:3px solid transparent;white-space:nowrap}
+  nav.tabs [role=tab][aria-selected=true]{color:#fff;border-bottom-color:var(--gold)}
+  nav.tabs [role=tab]:hover{color:#fff}
+
+  main{max-width:1180px;margin:0 auto;padding:22px 20px 80px}
+  .panel{display:none}.panel.active{display:block}
+  h2.pg{font:600 21px var(--sans);margin-bottom:4px}
+  p.pg-sub{color:var(--ink-soft);margin-bottom:18px;max-width:78ch}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px}
+  .grid-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+  .kpi .lbl{font:600 11px/1.3 var(--sans);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint)}
+  .kpi .val{font:600 27px/1.2 var(--sans);margin-top:6px}
+  .kpi .sub{font-size:12px;color:var(--ink-soft);margin-top:2px}
+  .kpi.ok .val{color:var(--ok)} .kpi.warn .val{color:var(--warn)} .kpi.late .val{color:var(--late)}
+
+  .two-col{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:14px;align-items:start}
+  @media(max-width:920px){.two-col{grid-template-columns:minmax(0,1fr)}}
+  .card h3{font:600 15px var(--sans);margin-bottom:2px}
+  .card .h-sub{font-size:12.5px;color:var(--ink-faint);margin-bottom:12px}
+  canvas{max-width:100%;display:block}
+
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin-top:8px}
+  .legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+
+  .tbl{overflow-x:auto;margin-top:6px}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:620px}
+  th{text-align:left;font:600 11px/1.3 var(--sans);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-faint);
+     padding:8px 10px;border-bottom:1px solid var(--line)}
+  td{padding:9px 10px;border-bottom:1px solid #EBF0F5;vertical-align:middle}
+  tr:last-child td{border-bottom:0}
+  td.num,th.num{text-align:right}
+  .chip{display:inline-block;font:600 11px/1 var(--sans);padding:5px 9px;border-radius:999px;white-space:nowrap}
+  .chip.ok{background:#E3F1E9;color:var(--ok)} .chip.warn{background:#F8EDDA;color:var(--warn)}
+  .chip.late{background:#F7E3E0;color:var(--late)} .chip.done{background:#E5EBF2;color:var(--navy)}
+  .bar-track{background:#EAEFF4;border-radius:99px;height:7px;min-width:90px;position:relative;overflow:hidden}
+  .bar-fill{position:absolute;inset:0 auto 0 0;border-radius:99px;background:var(--teal)}
+
+  .btn{background:var(--teal);color:#fff;border:0;border-radius:7px;font:600 14px var(--sans);padding:10px 18px;cursor:pointer}
+  .btn:hover{background:var(--teal-dk)} .btn[disabled]{opacity:.55;cursor:default}
+  .btn.ghost{background:transparent;color:var(--teal);border:1.5px solid var(--teal)}
+  .btn.big{font-size:16px;padding:14px 26px;border-radius:9px}
+  .btn.out{background:var(--late)} .btn.out:hover{background:#A02F23}
+
+  /* Executive summary */
+  .exec .body{font-size:14px;color:var(--ink);white-space:normal}
+  .exec .body h4{font:600 13px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--teal);margin:14px 0 4px}
+  .exec .body p{margin-bottom:8px}
+  .exec .stamp{font-size:11.5px;color:var(--ink-faint);margin-top:12px;border-top:1px solid var(--line);padding-top:8px}
+  .shimmer{color:var(--ink-faint);font-size:13.5px}
+  @keyframes pulse{0%,100%{opacity:.45}50%{opacity:1}}
+  .shimmer.on{animation:pulse 1.1s ease-in-out infinite}
+  @media(prefers-reduced-motion:reduce){.shimmer.on{animation:none}}
+
+  /* Gantt */
+  .gantt-wrap{overflow-x:auto;position:relative}
+  .gantt{min-width:900px;position:relative}
+  .g-head{display:grid;grid-template-columns:230px repeat(12,1fr);border-bottom:1px solid var(--line)}
+  .g-head div{font:600 10.5px/1 var(--sans);letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint);
+    padding:8px 6px;text-align:center;border-left:1px solid #EDF1F6}
+  .g-head div:first-child{text-align:left;border-left:0}
+  .g-row{display:grid;grid-template-columns:230px repeat(12,1fr);align-items:center;min-height:38px;border-bottom:1px solid #F0F4F8;position:relative}
+  .g-row:nth-child(odd){background:#FBFCFE}
+  .g-label{font-size:12.5px;padding:4px 8px 4px 6px;color:var(--ink)}
+  .g-label small{display:block;color:var(--ink-faint);font-size:10.5px}
+  .g-proj{background:#EEF2F7;font:600 12px var(--sans);color:var(--navy);letter-spacing:.04em;text-transform:uppercase}
+  .g-proj .g-label{padding:9px 6px}
+  .g-cell{height:100%;border-left:1px solid #EDF1F6;min-height:38px}
+  .g-bar{position:absolute;height:16px;top:50%;transform:translateY(-50%);border-radius:4px;background:var(--teal);opacity:.92}
+  .g-bar .fill{position:absolute;inset:0 auto 0 0;background:rgba(255,255,255,.38);border-radius:4px 0 0 4px}
+  .g-bar.crit{background:var(--gold)}
+  .g-bar.late-b{background:var(--late)}
+  .g-bar.warn-b{background:var(--warn)}
+  .g-ms{position:absolute;width:14px;height:14px;top:50%;transform:translateY(-50%) rotate(45deg);background:var(--navy);border-radius:2px}
+  .g-ms.warn-b{background:var(--warn)}
+  .today-line{position:absolute;top:0;bottom:0;width:2px;background:var(--gold);opacity:.8;pointer-events:none;z-index:3}
+  .today-tag{position:absolute;top:-2px;font:600 10px var(--sans);color:var(--gold);transform:translateX(6px);z-index:3}
+  svg.dep{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+  .g-key{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin-top:10px}
+  .g-key i{display:inline-block;width:14px;height:9px;border-radius:2px;vertical-align:middle;margin-right:6px}
+
+  /* Time & attendance */
+  .clock-face{text-align:center;padding:26px 18px}
+  .clock-face .status{font:600 12px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:8px}
+  .clock-face .status.in{color:var(--ok)}
+  .clock-face .elapsed{font:600 44px/1.1 var(--sans);font-variant-numeric:tabular-nums;margin-bottom:4px}
+  .clock-face .since{font-size:13px;color:var(--ink-soft);margin-bottom:18px}
+  .sess{font-size:13px;text-align:left;margin-top:18px}
+  .sess .s-row{display:flex;justify-content:space-between;padding:7px 2px;border-bottom:1px solid #EEF2F6}
+  .sess .s-row:last-child{border-bottom:0}
+  .sum-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+  .sum{background:#F7F9FC;border:1px solid var(--line);border-radius:8px;padding:12px}
+  .sum .lbl{font:600 10.5px/1.3 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint)}
+  .sum .val{font:600 21px/1.25 var(--sans);font-variant-numeric:tabular-nums;margin-top:4px}
+  .sum .sub{font-size:11.5px;color:var(--ink-soft)}
+  .wage-row{display:flex;justify-content:space-between;font-size:13.5px;padding:7px 2px;border-bottom:1px solid #EEF2F6}
+  .wage-row b{font-variant-numeric:tabular-nums}
+  .wage-row.total{border-bottom:0;border-top:2px solid var(--navy);margin-top:4px;padding-top:10px;font-size:15px}
+  .rate-line{display:flex;align-items:center;gap:8px;margin:10px 0 14px;font-size:13.5px}
+  .rate-line input{width:92px;font:600 14px var(--sans);padding:7px;border:1px solid var(--line);border-radius:6px;text-align:right}
+  .nmw{font-size:12px;margin-top:6px}
+  .nmw.ok{color:var(--ok)} .nmw.bad{color:var(--late)}
+  .note{font-size:12px;color:var(--ink-faint);margin-top:10px;max-width:64ch}
+
+  /* Mobile frames */
+  .phones{display:flex;gap:34px;flex-wrap:wrap;justify-content:center;padding:10px 0 6px}
+  .phone-slot{text-align:center}
+  .phone-slot .p-cap{font:600 13px var(--sans);margin-top:14px}
+  .phone-slot .p-sub{font-size:11.5px;color:var(--ink-faint)}
+  .iphone{width:280px;height:580px;border-radius:44px;background:#0B0F14;padding:10px;box-shadow:0 18px 40px rgba(14,42,71,.28);position:relative}
+  .iphone .screen{background:#F4F6F9;border-radius:34px;height:100%;overflow:hidden;position:relative;display:flex;flex-direction:column}
+  .iphone .island{position:absolute;top:18px;left:50%;transform:translateX(-50%);width:96px;height:26px;background:#0B0F14;border-radius:14px;z-index:5}
+  .android{width:280px;height:580px;border-radius:26px;background:#101418;padding:8px;box-shadow:0 18px 40px rgba(14,42,71,.28);position:relative}
+  .android .screen{background:#F4F6F9;border-radius:19px;height:100%;overflow:hidden;position:relative;display:flex;flex-direction:column}
+  .android .punch{position:absolute;top:16px;left:50%;transform:translateX(-50%);width:12px;height:12px;background:#101418;border-radius:50%;z-index:5}
+  .m-head{background:var(--navy);color:#fff;padding:44px 16px 14px;text-align:center}
+  .m-head .m-brand{font:600 13px var(--sans);letter-spacing:.04em}
+  .m-head .m-user{font-size:11px;color:#9FB3C8;margin-top:2px}
+  .m-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:14px}
+  .m-elapsed{font:600 34px/1 var(--sans);font-variant-numeric:tabular-nums}
+  .m-status{font:600 10.5px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint)}
+  .m-status.in{color:var(--ok)}
+  .m-btn{width:150px;height:150px;border-radius:50%;border:0;cursor:pointer;color:#fff;font:600 17px var(--sans);
+    background:radial-gradient(circle at 32% 28%,#17A9AB,var(--teal-dk));box-shadow:0 8px 22px rgba(15,139,141,.4)}
+  .m-btn.out{background:radial-gradient(circle at 32% 28%,#D8574A,#A02F23);box-shadow:0 8px 22px rgba(192,57,43,.35)}
+  .m-geo{font-size:10.5px;color:var(--ink-faint);display:flex;align-items:center;gap:5px}
+  .m-geo i{width:7px;height:7px;border-radius:50%;background:var(--ok);display:inline-block}
+  .m-foot{padding:10px;border-top:1px solid var(--line);display:flex;justify-content:space-around;font-size:10px;color:var(--ink-faint)}
+  .m-foot span.on{color:var(--teal);font-weight:600}
+  .install{max-width:760px;margin:22px auto 0}
+  .install ol{margin:8px 0 0 20px;font-size:13.5px}
+  .install li{margin-bottom:5px}
+  footer{padding:26px 20px 60px;text-align:center;font-size:12px;color:var(--ink-faint)}
+</style>
+
+<header class="app">
+  <div class="app-top">
+    <div class="logo">
+      <div class="mark">P</div>
+      <div><b>Praveno</b><small>Prepared for Thedcf · Time · Projects · People</small></div>
+    </div>
+    <span class="demo-chip">Interactive demo · simulated data</span>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Demo sections">
+    <button role="tab" aria-selected="true" aria-controls="tab-dash" id="tabbtn-dash">Dashboard</button>
+    <button role="tab" aria-selected="false" aria-controls="tab-plan" id="tabbtn-plan">Project Plan · Gantt</button>
+    <button role="tab" aria-selected="false" aria-controls="tab-time" id="tabbtn-time">Time &amp; Attendance</button>
+    <button role="tab" aria-selected="false" aria-controls="tab-mobile" id="tabbtn-mobile">Mobile Apps</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ══════════════ DASHBOARD ══════════════ -->
+<section class="panel active" id="tab-dash" role="tabpanel" aria-labelledby="tabbtn-dash">
+  <h2 class="pg">Delivery dashboard</h2>
+  <p class="pg-sub">Live view of every active project: what's done, what's slipping, and who's on it.
+     The trend chart tracks planned versus actual delivery, and the summary below writes itself from the same numbers.</p>
+
+  <div class="grid-kpi" id="kpiRow"></div>
+
+  <div class="two-col">
+    <div class="card">
+      <h3>Delivery trend — planned vs actual</h3>
+      <div class="h-sub">Cumulative tasks completed by week · shaded band = expected variance range · flag early when the lines part ways</div>
+      <canvas id="dmaicChart" width="680" height="300" aria-label="Time series chart of planned versus actual cumulative task completions across twelve weeks with a variance band and today marker"></canvas>
+      <div class="legend">
+        <span><i style="background:#0E2A47"></i>Planned</span>
+        <span><i style="background:#0F8B8D"></i>Actual</span>
+        <span><i style="background:#D9A441"></i>Today</span>
+        <span><i style="background:#C9D6E4;height:10px"></i>Variance band</span>
+      </div>
+    </div>
+    <div class="card exec">
+      <h3>Executive summary</h3>
+      <div class="h-sub">Written automatically from current project data</div>
+      <button class="btn" id="genExec" type="button">Generate executive summary</button>
+      <div class="shimmer" id="execLoad" hidden>Analysing 14 tasks across 3 projects…</div>
+      <div class="body" id="execBody"></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <h3>Task status by resource</h3>
+    <div class="h-sub">On&nbsp;time / at&nbsp;risk / late is predicted from pace so far and the health of each task's predecessors — not just the due date</div>
+    <div class="tbl"><table id="taskTable">
+      <thead><tr><th>Task</th><th>Project</th><th>Resource</th><th>Due</th><th>Progress</th><th class="num">Pace index</th><th>Prediction</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ══════════════ GANTT ══════════════ -->
+<section class="panel" id="tab-plan" role="tabpanel" aria-labelledby="tabbtn-plan">
+  <h2 class="pg">Project plan — integrated master schedule</h2>
+  <p class="pg-sub">Twelve-week schedule across all projects. Arrows show predecessor links; the gold bars are the
+     critical path — if they slip, the launch date slips. Diamonds are milestones.</p>
+  <div class="card">
+    <div class="gantt-wrap" id="ganttWrap">
+      <div class="gantt" id="gantt"></div>
+    </div>
+    <div class="g-key">
+      <span><i style="background:var(--teal)"></i>Scheduled task</span>
+      <span><i style="background:var(--gold)"></i>Critical path</span>
+      <span><i style="background:var(--warn)"></i>At risk</span>
+      <span><i style="background:var(--late)"></i>Running late</span>
+      <span><i style="background:var(--navy);width:9px;height:9px;transform:rotate(45deg)"></i>&nbsp;Milestone</span>
+      <span><i style="background:#93A9BF;height:2px"></i>Dependency arrow</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ TIME & ATTENDANCE ══════════════ -->
+<section class="panel" id="tab-time" role="tabpanel" aria-labelledby="tabbtn-time">
+  <h2 class="pg">Time &amp; attendance</h2>
+  <p class="pg-sub">Clock in and out below — your hours total up per day and roll into weekly, bi-weekly and monthly
+     views, with overtime, Sunday and public-holiday time valued at the correct South African rates automatically.</p>
+  <div class="two-col">
+    <div class="card clock-face">
+      <div class="status" id="clockStatus">Clocked out</div>
+      <div class="elapsed num" id="clockElapsed">00:00:00</div>
+      <div class="since" id="clockSince">Ready when you are</div>
+      <button class="btn big" id="clockBtn" type="button">Clock in</button>
+      <div class="sess">
+        <h3 style="font-size:13.5px;margin:4px 0 2px">Today's sessions</h3>
+        <div id="sessList"><div class="s-row"><span style="color:var(--ink-faint)">No sessions yet today</span></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Your timesheet — Demo Employee</h3>
+      <div class="h-sub" id="tsRange"></div>
+      <div class="sum-grid" id="sumGrid"></div>
+      <h3 style="margin-top:6px">Wage preview — current week</h3>
+      <div class="rate-line">
+        <label for="rateIn">Hourly rate</label>
+        <span>R</span><input id="rateIn" type="number" min="0" step="0.01" value="95.00" inputmode="decimal">
+        <span class="nmw ok" id="nmwCheck"></span>
+      </div>
+      <div id="wageRows"></div>
+      <p class="note">Overtime beyond ordinary hours is paid at 1.5×; Sunday work at 2× (1.5× if Sunday is a normal
+        shift day); public holidays at 2×. Records are kept tamper-evident for payroll queries and inspections.</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <h3>HR view — team hours this week</h3>
+    <div class="h-sub">What payroll sees: per-person ordinary and overtime hours with exceptions surfaced before pay run</div>
+    <div class="tbl"><table id="hrTable">
+      <thead><tr><th>Employee</th><th>Role</th><th class="num">Ordinary (h)</th><th class="num">Overtime (h)</th><th class="num">Sunday / PH (h)</th><th class="num">Week total</th><th>Status</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ══════════════ MOBILE ══════════════ -->
+<section class="panel" id="tab-mobile" role="tabpanel" aria-labelledby="tabbtn-mobile">
+  <h2 class="pg">Mobile apps — iPhone &amp; Android</h2>
+  <p class="pg-sub">The same clock in/out experience on both platforms — try the buttons, they're live and share
+     state with the Time &amp; Attendance tab. Staff clock in from their own phone with location confirmation.</p>
+  <div class="phones">
+    <div class="phone-slot">
+      <div class="iphone"><div class="island"></div><div class="screen">
+        <div class="m-head"><div class="m-brand">Praveno</div><div class="m-user">Demo Employee · Cape Town office</div></div>
+        <div class="m-body">
+          <div class="m-status" data-mstatus>Clocked out</div>
+          <div class="m-elapsed num" data-melapsed>00:00:00</div>
+          <button class="m-btn" data-mbtn type="button">Clock in</button>
+          <div class="m-geo"><i></i>Location confirmed · on site</div>
+        </div>
+        <div class="m-foot"><span class="on">Clock</span><span>Timesheet</span><span>Tasks</span><span>Leave</span></div>
+      </div></div>
+      <div class="p-cap">iPhone</div>
+      <div class="p-sub">Face ID sign-in · works offline, syncs later</div>
+    </div>
+    <div class="phone-slot">
+      <div class="android"><div class="punch"></div><div class="screen">
+        <div class="m-head"><div class="m-brand">Praveno</div><div class="m-user">Demo Employee · Cape Town office</div></div>
+        <div class="m-body">
+          <div class="m-status" data-mstatus>Clocked out</div>
+          <div class="m-elapsed num" data-melapsed>00:00:00</div>
+          <button class="m-btn" data-mbtn type="button">Clock in</button>
+          <div class="m-geo"><i></i>Location confirmed · on site</div>
+        </div>
+        <div class="m-foot"><span class="on">Clock</span><span>Timesheet</span><span>Tasks</span><span>Leave</span></div>
+      </div></div>
+      <div class="p-cap">Android</div>
+      <div class="p-sub">Fingerprint sign-in · works offline, syncs later</div>
+    </div>
+  </div>
+  <div class="card install">
+    <h3>Try it on your own phone</h3>
+    <ol>
+      <li><b>iPhone / iPad:</b> open this demo link in Safari → tap <b>Share</b> → <b>Add to Home Screen</b>. It installs like an app.</li>
+      <li><b>Android:</b> open this demo link in Chrome → tap the menu → <b>Install app</b>.</li>
+      <li><b>Desktop:</b> this page is the full web experience — nothing to install.</li>
+    </ol>
+    <p class="note">Pilot builds for the Apple App Store (via TestFlight) and Google Play are prepared during the
+      pilot phase; your team will receive invitations by email.</p>
+  </div>
+</section>
+
+</main>
+<footer>Praveno · Interactive proof of concept prepared for Thedcf · All names, projects and figures are simulated demo data.</footer>
+
+<script>
+(function(){
+'use strict';
+var reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ───────── tabs ───────── */
+var tabs=[].slice.call(document.querySelectorAll('[role=tab]'));
+tabs.forEach(function(t){t.addEventListener('click',function(){
+  tabs.forEach(function(o){o.setAttribute('aria-selected',o===t?'true':'false');});
+  [].slice.call(document.querySelectorAll('.panel')).forEach(function(p){p.classList.remove('active');});
+  document.getElementById(t.getAttribute('aria-controls')).classList.add('active');
+  if(t.id==='tabbtn-plan'){setTimeout(drawDeps,30);}
+});});
+
+/* ───────── shared demo data ───────── */
+var TODAY_WEEK=7, WEEKS=12;
+// tasks: id,name,proj,res,start wk,end wk (inclusive),pct done,preds,critical,milestone
+var TASKS=[
+ {id:'T1', name:'Campaign strategy & brief', proj:'Ubuntu Bank Spring Launch', res:'Ayesha Patel',    s:1,e:2, pct:100,pred:[],        crit:true},
+ {id:'T2', name:'Creative concepts',          proj:'Ubuntu Bank Spring Launch', res:'Sipho Dlamini',   s:2,e:4, pct:100,pred:['T1'],    crit:true},
+ {id:'T3', name:'Client approval',            proj:'Ubuntu Bank Spring Launch', res:'Ayesha Patel',    s:4,e:4, pct:100,pred:['T2'],    crit:true, ms:true},
+ {id:'T4', name:'Asset production',           proj:'Ubuntu Bank Spring Launch', res:'Sipho Dlamini',   s:4,e:7, pct:82, pred:['T3'],    crit:true},
+ {id:'T5', name:'Media plan & booking',       proj:'Ubuntu Bank Spring Launch', res:'Johan van der Merwe',s:5,e:7,pct:93,pred:['T3']},
+ {id:'T6', name:'Campaign launch',            proj:'Ubuntu Bank Spring Launch', res:'Ayesha Patel',    s:8,e:8, pct:0,  pred:['T4','T5'],crit:true, ms:true},
+ {id:'T7', name:'Performance reporting',      proj:'Ubuntu Bank Spring Launch', res:'Lerato Mokoena',  s:8,e:12,pct:0,  pred:['T6'],    crit:true},
+ {id:'T8', name:'UX & content audit',         proj:'Karoo Tourism Site Refresh',res:'Lerato Mokoena',  s:1,e:3, pct:100,pred:[]},
+ {id:'T9', name:'Design system',              proj:'Karoo Tourism Site Refresh',res:'Sipho Dlamini',   s:3,e:5, pct:100,pred:['T8']},
+ {id:'T10',name:'Build & CMS setup',          proj:'Karoo Tourism Site Refresh',res:'Kagiso Molefe',   s:5,e:9, pct:42, pred:['T9']},
+ {id:'T11',name:'QA & site launch',           proj:'Karoo Tourism Site Refresh',res:'Kagiso Molefe',   s:9,e:11,pct:0,  pred:['T10']},
+ {id:'T12',name:'Asset inventory',            proj:'Brand Asset Library',       res:'Thandi Nkosi',    s:2,e:4, pct:100,pred:[]},
+ {id:'T13',name:'Tagging & upload',           proj:'Brand Asset Library',       res:'Thandi Nkosi',    s:4,e:8, pct:88, pred:['T12']},
+ {id:'T14',name:'Team training',              proj:'Brand Asset Library',       res:'Naledi Khumalo',  s:9,e:9, pct:0,  pred:['T13'], ms:true}
+];
+var byId={};TASKS.forEach(function(t){byId[t.id]=t;});
+
+/* pace index (SPI-style): earned vs planned progress at today */
+function planned(t){if(t.s>TODAY_WEEK)return 0;if(t.e<=TODAY_WEEK)return 100;
+  return Math.round(100*(TODAY_WEEK-t.s+1)/(t.e-t.s+1));}
+function spi(t){var p=planned(t);if(p===0)return null;return t.pct/p;}
+function predTrouble(t){return t.pred.some(function(p){var st=status(byId[p]);return st==='late'||st==='warn';});}
+function status(t){
+  if(t.pct>=100)return 'done';
+  var s=spi(t);
+  if(s===null)return predTrouble(t)?'warn':'future';
+  if(s<0.75)return 'late';
+  if(s<0.92||predTrouble(t))return 'warn';
+  return 'ok';
+}
+var ST_LABEL={done:'Complete',ok:'On time',warn:'At risk',late:'Late',future:'Not started'};
+var ST_CHIP={done:'done',ok:'ok',warn:'warn',late:'late',future:'done'};
+
+/* ───────── KPIs ───────── */
+(function(){
+  var counts={ok:0,warn:0,late:0,done:0,future:0};
+  TASKS.forEach(function(t){counts[status(t)]++;});
+  var kpis=[
+    {lbl:'Active projects',val:'3',sub:'2 client · 1 internal',cls:''},
+    {lbl:'Tasks complete',val:counts.done+' / '+TASKS.length,sub:'across all projects',cls:''},
+    {lbl:'On time',val:String(counts.ok),sub:'pacing to plan',cls:'ok'},
+    {lbl:'At risk',val:String(counts.warn),sub:'needs attention this week',cls:'warn'},
+    {lbl:'Running late',val:String(counts.late),sub:'intervention required',cls:'late'},
+    {lbl:'Team clocked in',val:'6 / 8',sub:'right now (simulated)',cls:''}
+  ];
+  document.getElementById('kpiRow').innerHTML=kpis.map(function(k){
+    return '<div class="card kpi '+k.cls+'"><div class="lbl">'+k.lbl+'</div><div class="val num">'+k.val+'</div><div class="sub">'+k.sub+'</div></div>';
+  }).join('');
+})();
+
+/* ───────── task table ───────── */
+(function(){
+  var rows=TASKS.filter(function(t){return !t.ms;}).map(function(t){
+    var st=status(t),s=spi(t);
+    return '<tr><td><b>'+t.name+'</b></td><td style="color:var(--ink-soft)">'+t.proj+'</td><td>'+t.res+'</td>'+
+      '<td class="num">Week '+t.e+'</td>'+
+      '<td><div class="bar-track"><div class="bar-fill" style="width:'+t.pct+'%;'+(st==='late'?'background:var(--late)':st==='warn'?'background:var(--warn)':'')+'"></div></div>'+
+      '<span style="font-size:11.5px;color:var(--ink-faint)" class="num">'+t.pct+'%</span></td>'+
+      '<td class="num">'+(s===null?'—':s.toFixed(2))+'</td>'+
+      '<td><span class="chip '+ST_CHIP[st]+'">'+ST_LABEL[st]+'</span></td></tr>';
+  }).join('');
+  document.querySelector('#taskTable tbody').innerHTML=rows;
+})();
+
+/* ───────── DMAIC chart ───────── */
+(function(){
+  var cv=document.getElementById('dmaicChart'),ctx=cv.getContext('2d');
+  var W=cv.width,H=cv.height,pL=40,pR=14,pT=14,pB=30;
+  var plannedCum=[0,0,1,2,5,6,6,8,10,12,12,13,14];   // index=week 0..12, from task end weeks
+  var actualCum =[0,0,1,2,5,6,6,6];                   // to week 7 — 6 tasks actually complete
+  var maxY=15;
+  function X(w){return pL+(W-pL-pR)*w/WEEKS;}
+  function Y(v){return H-pB-(H-pT-pB)*v/maxY;}
+  ctx.font='11px '+getComputedStyle(document.body).getPropertyValue('--mono');
+  // variance band ±1.5 tasks around plan
+  ctx.beginPath();
+  for(var w=0;w<=WEEKS;w++){var v=Math.min(maxY,plannedCum[w]+1.5);w===0?ctx.moveTo(X(w),Y(v)):ctx.lineTo(X(w),Y(v));}
+  for(w=WEEKS;w>=0;w--){ctx.lineTo(X(w),Y(Math.max(0,plannedCum[w]-1.5)));}
+  ctx.closePath();ctx.fillStyle='rgba(201,214,228,.45)';ctx.fill();
+  // grid
+  ctx.strokeStyle='#E7EDF3';ctx.fillStyle='#7C8894';ctx.lineWidth=1;
+  for(var g=0;g<=15;g+=5){ctx.beginPath();ctx.moveTo(pL,Y(g));ctx.lineTo(W-pR,Y(g));ctx.stroke();ctx.fillText(String(g),12,Y(g)+4);}
+  for(w=0;w<=WEEKS;w+=2){ctx.fillText('W'+w,X(w)-8,H-10);}
+  // today
+  ctx.strokeStyle='#D9A441';ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(X(TODAY_WEEK),pT);ctx.lineTo(X(TODAY_WEEK),H-pB);ctx.stroke();ctx.setLineDash([]);
+  // planned
+  ctx.strokeStyle='#0E2A47';ctx.lineWidth=2;ctx.beginPath();
+  for(w=0;w<=WEEKS;w++){w===0?ctx.moveTo(X(w),Y(plannedCum[w])):ctx.lineTo(X(w),Y(plannedCum[w]));}
+  ctx.stroke();
+  // actual
+  ctx.strokeStyle='#0F8B8D';ctx.lineWidth=2.5;ctx.beginPath();
+  for(w=0;w<actualCum.length;w++){w===0?ctx.moveTo(X(w),Y(actualCum[w])):ctx.lineTo(X(w),Y(actualCum[w]));}
+  ctx.stroke();
+  var lw=actualCum.length-1;
+  ctx.fillStyle='#0F8B8D';ctx.beginPath();ctx.arc(X(lw),Y(actualCum[lw]),4.5,0,7);ctx.fill();
+})();
+
+/* ───────── executive summary ───────── */
+document.getElementById('genExec').addEventListener('click',function(){
+  var btn=this,load=document.getElementById('execLoad'),body=document.getElementById('execBody');
+  btn.disabled=true;body.innerHTML='';load.hidden=false;load.classList.add('on');
+  setTimeout(function(){
+    load.hidden=true;load.classList.remove('on');btn.disabled=false;btn.textContent='Refresh summary';
+    var done=TASKS.filter(function(t){return t.pct>=100;}).length;
+    var late=TASKS.filter(function(t){return status(t)==='late';});
+    var warn=TASKS.filter(function(t){return status(t)==='warn';});
+    var pctAll=Math.round(TASKS.reduce(function(a,t){return a+t.pct;},0)/TASKS.length);
+    body.innerHTML=
+      '<h4>Progress</h4><p>The portfolio is <b>'+pctAll+'% complete</b> overall, with '+done+' of '+TASKS.length+
+      ' tasks finished at the end of week '+TODAY_WEEK+'. The Ubuntu Bank Spring Launch remains broadly on plan and the '+
+      'Brand Asset Library is ahead of schedule.</p>'+
+      '<h4>What to look out for</h4><p><b>'+late[0].name+'</b> ('+late[0].proj+', '+late[0].res+') is pacing at '+
+      spi(late[0]).toFixed(2)+' against plan — roughly two weeks of slippage if nothing changes. Because <b>QA &amp; site launch</b> '+
+      'can only start once the build finishes (its predecessor), the Karoo Tourism launch in week 11 is exposed. Recommend adding '+
+      'a second developer for two weeks or re-baselining the launch.</p>'+
+      '<h4>Dependencies &amp; predecessors</h4><p><b>Campaign launch (week 8)</b> depends on both Asset production and '+
+      'Media plan &amp; booking. Asset production is at '+byId.T4.pct+'% and flagged at risk — it is the pacing item on the '+
+      'critical path. Media booking is close behind and not the constraint.</p>'+
+      '<h4>Successes</h4><p>Client approval for Ubuntu Bank was secured on schedule in week 4 with concepts accepted first-pass. '+
+      'Asset tagging is at '+byId.T13.pct+'% — team training can likely pull forward a week.</p>'+
+      '<div class="stamp">Generated by the reporting service from week-'+TODAY_WEEK+' snapshot data · refresh any time</div>';
+  },reduced?150:1400);
+});
+
+/* ───────── Gantt ───────── */
+(function(){
+  var g=document.getElementById('gantt');
+  var head='<div class="g-head"><div>Task / resource</div>';
+  for(var w=1;w<=WEEKS;w++){head+='<div>W'+w+'</div>';}
+  head+='</div>';
+  var html=head,lastProj='';
+  TASKS.forEach(function(t){
+    if(t.proj!==lastProj){lastProj=t.proj;
+      html+='<div class="g-row g-proj"><div class="g-label" style="grid-column:1 / -1">'+t.proj+'</div></div>';}
+    var st=status(t);
+    var cls=t.crit?'crit':'';
+    if(st==='late')cls='late-b';else if(st==='warn')cls=(t.crit?'crit warn-b':'warn-b');
+    html+='<div class="g-row" data-task="'+t.id+'"><div class="g-label"><b>'+t.id+'</b> '+t.name+'<small>'+t.res+
+      (t.pred.length?' · after '+t.pred.join(', '):'')+'</small></div>';
+    for(w=1;w<=WEEKS;w++){html+='<div class="g-cell" data-w="'+w+'"></div>';}
+    if(t.ms){
+      html+='<div class="g-ms '+(st==='warn'?'warn-b':'')+'" data-bar="'+t.id+'" style="left:calc(230px + (100% - 230px)*'+((t.s-0.5)/WEEKS)+' - 7px)" title="'+t.name+'"></div>';
+    }else{
+      var l='calc(230px + (100% - 230px)*'+((t.s-1)/WEEKS)+')';
+      var wd='calc((100% - 230px)*'+((t.e-t.s+1)/WEEKS)+' - 4px)';
+      html+='<div class="g-bar '+cls+'" data-bar="'+t.id+'" style="left:'+l+';width:'+wd+'" title="'+t.name+' · '+t.pct+'%">'+
+        '<div class="fill" style="width:'+t.pct+'%"></div></div>';
+    }
+    html+='</div>';
+  });
+  g.innerHTML=html;
+  // today line
+  var tl=document.createElement('div');tl.className='today-line';
+  tl.style.left='calc(230px + (100% - 230px)*'+(TODAY_WEEK/WEEKS)+')';
+  var tt=document.createElement('div');tt.className='today-tag';tt.textContent='TODAY';
+  tt.style.left=tl.style.left;
+  g.appendChild(tl);g.appendChild(tt);
+  // dependency arrows
+  var svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('class','dep');g.appendChild(svg);
+  window.drawDeps=function(){
+    var gr=g.getBoundingClientRect();
+    svg.setAttribute('viewBox','0 0 '+gr.width+' '+gr.height);
+    svg.setAttribute('width',gr.width);svg.setAttribute('height',gr.height);
+    var paths='';
+    TASKS.forEach(function(t){t.pred.forEach(function(pid){
+      var a=g.querySelector('[data-bar="'+pid+'"]'),b=g.querySelector('[data-bar="'+t.id+'"]');
+      if(!a||!b)return;
+      var ar=a.getBoundingClientRect(),br=b.getBoundingClientRect();
+      var x1=ar.right-gr.left,y1=ar.top-gr.top+ar.height/2;
+      var x2=br.left-gr.left,y2=br.top-gr.top+br.height/2;
+      var mx=x1+Math.max(10,(x2-x1)/2);
+      paths+='<path d="M'+x1+' '+y1+' L'+(x1+8)+' '+y1+' L'+(x1+8)+' '+y2+' L'+(x2-5)+' '+y2+
+        '" fill="none" stroke="#93A9BF" stroke-width="1.5"/>'+
+        '<path d="M'+(x2-5)+' '+(y2-4)+' L'+(x2+1)+' '+y2+' L'+(x2-5)+' '+(y2+4)+' Z" fill="#93A9BF"/>';
+    });});
+    svg.innerHTML=paths;
+  };
+  var ro;try{ro=new ResizeObserver(function(){if(document.getElementById('tab-plan').classList.contains('active'))drawDeps();});ro.observe(g);}catch(e){}
+})();
+
+/* ───────── Time & attendance ───────── */
+var HOLIDAYS_2026=['2026-01-01','2026-03-21','2026-04-03','2026-04-06','2026-04-27','2026-05-01','2026-06-16','2026-08-09','2026-08-10','2026-09-24','2026-12-16','2026-12-25','2026-12-26'];
+function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function isHoliday(d){return HOLIDAYS_2026.indexOf(iso(d))>=0;}
+function isSunday(d){return d.getDay()===0;}
+
+/* deterministic simulated history for the past 35 days (excl. today) */
+function genHistory(){
+  var hist={},now=new Date();
+  for(var i=1;i<=35;i++){
+    var d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i);
+    var dow=d.getDay();
+    var seed=Math.abs(Math.sin(d.getDate()*3.7+d.getMonth()*11.3));
+    if(dow===0){ if(seed>0.8) hist[iso(d)]=3.5+seed; continue; }  // occasional Sunday shift
+    if(dow===6) continue;                                          // Saturdays off
+    var h=8.1+seed*1.8;                                            // 8.1–9.9 h
+    hist[iso(d)]=Math.round(h*60)/60;
+  }
+  return hist;
+}
+var HISTORY=genHistory();
+
+/* live clock state (shared web + phone frames) */
+var clock={in:false,startedAt:null,sessions:[]};
+try{var saved=JSON.parse(localStorage.getItem('praveno_thedcf_demo_v1')||'null');
+  if(saved&&saved.day===iso(new Date())){clock=saved.clock;
+    if(clock.in&&clock.startedAt)clock.startedAt=new Date(clock.startedAt).getTime();}
+}catch(e){}
+function persist(){try{localStorage.setItem('praveno_thedcf_demo_v1',JSON.stringify({day:iso(new Date()),clock:clock}));}catch(e){}}
+
+function fmtHMS(ms){var s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),ss=s%60;
+  return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(ss).padStart(2,'0');}
+function fmtH(h){return h.toFixed(1)+' h';}
+function fmtT(ts){var d=new Date(ts);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function todayLiveHours(){
+  var t=clock.sessions.reduce(function(a,s){return a+(s.out-s.in);},0);
+  if(clock.in&&clock.startedAt)t+=Date.now()-clock.startedAt;
+  return t/3600000;
+}
+function hoursFor(d){var k=iso(d);var base=HISTORY[k]||0;
+  if(k===iso(new Date()))base+=todayLiveHours();return base;}
+
+/* BCEA classification: per day ordinary ≤9h, rest OT; Sundays & holidays counted separately at premium */
+function classifyRange(from,to){ // dates inclusive
+  var ord=0,ot=0,prem=0;
+  var d=new Date(from.getFullYear(),from.getMonth(),from.getDate());
+  while(d<=to){
+    var h=hoursFor(d);
+    if(h>0){
+      if(isSunday(d)||isHoliday(d)){prem+=h;}
+      else{ord+=Math.min(h,9);ot+=Math.max(0,h-9);}
+    }
+    d.setDate(d.getDate()+1);
+  }
+  // weekly ordinary ceiling: anything past 45h/week becomes overtime
+  var weeks=Math.max(1,Math.ceil(((to-from)/86400000+1)/7));
+  var cap=45*weeks;
+  if(ord>cap){ot+=ord-cap;ord=cap;}
+  return {ord:ord,ot:ot,prem:prem,total:ord+ot+prem};
+}
+function weekStart(d){var x=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  var dow=(x.getDay()+6)%7;x.setDate(x.getDate()-dow);return x;} // Monday
+function render(){
+  var now=new Date();
+  /* clock face */
+  var stEl=document.getElementById('clockStatus'),elEl=document.getElementById('clockElapsed'),
+      siEl=document.getElementById('clockSince'),btn=document.getElementById('clockBtn');
+  var live=clock.in?Date.now()-clock.startedAt:0;
+  stEl.textContent=clock.in?'Clocked in':'Clocked out';
+  stEl.classList.toggle('in',clock.in);
+  elEl.textContent=fmtHMS(live);
+  siEl.textContent=clock.in?('Since '+fmtT(clock.startedAt)+(isSunday(now)?' · Sunday — premium rate applies':isHoliday(now)?' · Public holiday — 2× rate applies':'')):
+    (clock.sessions.length?'Last session ended '+fmtT(clock.sessions[clock.sessions.length-1].out):'Ready when you are');
+  btn.textContent=clock.in?'Clock out':'Clock in';
+  btn.classList.toggle('out',clock.in);
+  document.querySelectorAll('[data-mstatus]').forEach(function(e){e.textContent=clock.in?'Clocked in':'Clocked out';e.classList.toggle('in',clock.in);});
+  document.querySelectorAll('[data-melapsed]').forEach(function(e){e.textContent=fmtHMS(live);});
+  document.querySelectorAll('[data-mbtn]').forEach(function(e){e.textContent=clock.in?'Clock out':'Clock in';e.classList.toggle('out',clock.in);});
+  /* sessions */
+  var sl=document.getElementById('sessList'),rows='';
+  clock.sessions.forEach(function(s,i){rows+='<div class="s-row"><span>Session '+(i+1)+' · '+fmtT(s.in)+' – '+fmtT(s.out)+'</span><b class="num">'+fmtHMS(s.out-s.in)+'</b></div>';});
+  if(clock.in)rows+='<div class="s-row"><span>Session '+(clock.sessions.length+1)+' · '+fmtT(clock.startedAt)+' – now</span><b class="num" style="color:var(--ok)">'+fmtHMS(live)+'</b></div>';
+  sl.innerHTML=rows||'<div class="s-row"><span style="color:var(--ink-faint)">No sessions yet today</span></div>';
+  /* rollups */
+  var ws=weekStart(now);
+  var biStart=new Date(ws);biStart.setDate(biStart.getDate()-7);
+  var mStart=new Date(now.getFullYear(),now.getMonth(),1);
+  var day=classifyRange(now,now), wk=classifyRange(ws,now), bi=classifyRange(biStart,now), mo=classifyRange(mStart,now);
+  document.getElementById('tsRange').textContent='Week starts Monday · month to date shown · updates live while you are clocked in';
+  document.getElementById('sumGrid').innerHTML=
+    '<div class="sum"><div class="lbl">Today</div><div class="val">'+fmtH(day.total)+'</div><div class="sub">'+(isSunday(now)?'Sunday · premium':isHoliday(now)?'Public holiday · 2×':(day.ot>0?fmtH(day.ot)+' overtime':'ordinary time'))+'</div></div>'+
+    '<div class="sum"><div class="lbl">This week</div><div class="val">'+fmtH(wk.total)+'</div><div class="sub">'+fmtH(wk.ot)+' OT · '+fmtH(wk.prem)+' Sun/PH</div></div>'+
+    '<div class="sum"><div class="lbl">Bi-weekly</div><div class="val">'+fmtH(bi.total)+'</div><div class="sub">this week + last</div></div>'+
+    '<div class="sum"><div class="lbl">This month</div><div class="val">'+fmtH(mo.total)+'</div><div class="sub">'+fmtH(mo.ot)+' OT · '+fmtH(mo.prem)+' Sun/PH</div></div>';
+  /* wage preview */
+  var rate=parseFloat(document.getElementById('rateIn').value)||0;
+  var nmw=document.getElementById('nmwCheck');
+  if(rate>=30.23){nmw.textContent='✓ above the national minimum wage (R30.23/h)';nmw.className='nmw ok';}
+  else{nmw.textContent='✗ below the national minimum wage (R30.23/h) — payroll exception raised';nmw.className='nmw bad';}
+  function money(v){return 'R '+v.toLocaleString('en-ZA',{minimumFractionDigits:2,maximumFractionDigits:2});}
+  var gOrd=wk.ord*rate,gOt=wk.ot*rate*1.5,gPrem=wk.prem*rate*2;
+  document.getElementById('wageRows').innerHTML=
+    '<div class="wage-row"><span>Ordinary time · '+fmtH(wk.ord)+' × 1.0</span><b class="num">'+money(gOrd)+'</b></div>'+
+    '<div class="wage-row"><span>Overtime · '+fmtH(wk.ot)+' × 1.5</span><b class="num">'+money(gOt)+'</b></div>'+
+    '<div class="wage-row"><span>Sunday / public holiday · '+fmtH(wk.prem)+' × 2.0</span><b class="num">'+money(gPrem)+'</b></div>'+
+    '<div class="wage-row total"><span>Gross for week to date</span><b class="num">'+money(gOrd+gOt+gPrem)+'</b></div>';
+}
+function toggleClock(){
+  if(clock.in){clock.sessions.push({in:clock.startedAt,out:Date.now()});clock.in=false;clock.startedAt=null;}
+  else{clock.in=true;clock.startedAt=Date.now();}
+  persist();render();
+}
+document.getElementById('clockBtn').addEventListener('click',toggleClock);
+document.querySelectorAll('[data-mbtn]').forEach(function(b){b.addEventListener('click',toggleClock);});
+document.getElementById('rateIn').addEventListener('input',render);
+setInterval(function(){if(clock.in)render();},1000);
+render();
+
+/* ───────── HR table ───────── */
+(function(){
+  var staff=[
+    ['Thandi Nkosi','Account Manager',38.4,1.2,0,'ok'],
+    ['Sipho Dlamini','Senior Designer',41.0,3.0,0,'warn-ot'],
+    ['Lerato Mokoena','Copywriter',36.7,0,0,'ok'],
+    ['Johan van der Merwe','Media Planner',39.2,0.8,0,'ok'],
+    ['Ayesha Patel','Project Lead',42.5,2.5,0,'warn-ot'],
+    ['Kagiso Molefe','Developer',40.1,4.6,4.0,'flag'],
+    ['Naledi Khumalo','HR Officer',35.0,0,0,'ok']
+  ];
+  var rows=staff.map(function(s){
+    var chip=s[5]==='ok'?'<span class="chip ok">Clear</span>':
+      s[5]==='warn-ot'?'<span class="chip warn">Approaching OT ceiling</span>':
+      '<span class="chip late">OT + Sunday — review before pay run</span>';
+    return '<tr><td><b>'+s[0]+'</b></td><td style="color:var(--ink-soft)">'+s[1]+'</td>'+
+      '<td class="num">'+s[2].toFixed(1)+'</td><td class="num">'+s[3].toFixed(1)+'</td><td class="num">'+s[4].toFixed(1)+'</td>'+
+      '<td class="num"><b>'+(s[2]+s[3]+s[4]).toFixed(1)+'</b></td><td>'+chip+'</td></tr>';
+  });
+  // live demo employee row
+  rows.unshift('<tr id="hrMe"></tr>');
+  document.querySelector('#hrTable tbody').innerHTML=rows.join('');
+  function me(){
+    var now=new Date(),ws=weekStart(now),wk=classifyRange(ws,now);
+    document.getElementById('hrMe').innerHTML='<td><b>Demo Employee (you)</b></td><td style="color:var(--ink-soft)">—</td>'+
+      '<td class="num">'+wk.ord.toFixed(1)+'</td><td class="num">'+wk.ot.toFixed(1)+'</td><td class="num">'+wk.prem.toFixed(1)+'</td>'+
+      '<td class="num"><b>'+wk.total.toFixed(1)+'</b></td><td><span class="chip ok">Live</span></td>';
+  }
+  me();setInterval(me,5000);
+})();
+})();
+</script>
+
+</body>
+</html>
