@@ -224,12 +224,12 @@
     <button role="tab" aria-selected="false" aria-controls="tab-board" id="tabbtn-board">Workflow Board</button>
     <button role="tab" aria-selected="false" aria-controls="tab-assign" id="tabbtn-assign">Assign Tasks</button>
     <button role="tab" aria-selected="false" aria-controls="tab-plan" id="tabbtn-plan">Project Plan · Gantt</button>
-    <button role="tab" aria-selected="false" aria-controls="tab-time" id="tabbtn-time">Time &amp; Attendance</button>
     <button role="tab" aria-selected="false" aria-controls="tab-raci" id="tabbtn-raci">Team RACI</button>
     <button role="tab" aria-selected="false" aria-controls="tab-intake" id="tabbtn-intake">Intake</button>
     <button role="tab" aria-selected="false" aria-controls="tab-approvals" id="tabbtn-approvals">Approvals</button>
     <button role="tab" aria-selected="false" aria-controls="tab-files" id="tabbtn-files">Files</button>
     <button role="tab" aria-selected="false" aria-controls="tab-reports" id="tabbtn-reports">Reports · Audit</button>
+    <button role="tab" aria-selected="false" aria-controls="tab-time" id="tabbtn-time">Time &amp; Attendance</button>
     <button role="tab" aria-selected="false" aria-controls="tab-mobile" id="tabbtn-mobile">Mobile Apps</button>
   </nav>
 </header>
@@ -292,49 +292,6 @@
       <span><i style="background:var(--navy);width:9px;height:9px;transform:rotate(45deg)"></i>&nbsp;Milestone</span>
       <span><i style="background:#93A9BF;height:2px"></i>Dependency arrow</span>
     </div>
-  </div>
-</section>
-
-<!-- ══════════════ TIME & ATTENDANCE ══════════════ -->
-<section class="panel" id="tab-time" role="tabpanel" aria-labelledby="tabbtn-time">
-  <h2 class="pg">Time &amp; attendance</h2>
-  <p class="pg-sub">Clock in and out below — your hours total up per day and roll into weekly, bi-weekly and monthly
-     views, with overtime, Sunday and public-holiday time valued at the correct South African rates automatically.</p>
-  <div class="two-col">
-    <div class="card clock-face">
-      <div class="status" id="clockStatus">Clocked out</div>
-      <div class="elapsed num" id="clockElapsed">00:00:00</div>
-      <div class="since" id="clockSince">Ready when you are</div>
-      <button class="btn big" id="clockBtn" type="button">Clock in</button>
-      <div class="sess">
-        <h3 style="font-size:13.5px;margin:4px 0 2px">Today's sessions</h3>
-        <div id="sessList"><div class="s-row"><span style="color:var(--ink-faint)">No sessions yet today</span></div></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>Your timesheet — Demo Employee</h3>
-      <div class="h-sub" id="tsRange"></div>
-      <div class="sum-grid" id="sumGrid"></div>
-      <h3 style="margin-top:6px">Wage preview — current week</h3>
-      <div class="rate-line">
-        <label for="rateIn">Hourly rate</label>
-        <span>R</span><input id="rateIn" type="number" min="0" step="0.01" value="95.00" inputmode="decimal">
-        <span class="nmw ok" id="nmwCheck"></span>
-      </div>
-      <div id="wageRows"></div>
-      <p class="note">Overtime beyond ordinary hours is paid at 1.5×; Sunday work at 2× (1.5× if Sunday is a normal
-        shift day); public holidays at 2×. Records are kept tamper-evident for payroll queries and inspections.</p>
-    </div>
-  </div>
-
-  <div class="card" style="margin-top:14px">
-    <h3>HR view — team hours this week</h3>
-    <div class="h-sub">What payroll sees: per-person ordinary and overtime hours with exceptions surfaced before pay run</div>
-    <div class="tbl"><table id="hrTable">
-      <thead><tr><th>Employee</th><th>Role</th><th class="num">Ordinary (h)</th><th class="num">Overtime (h)</th><th class="num">Sunday / PH (h)</th><th class="num">Week total</th><th>Status</th></tr></thead>
-      <tbody></tbody>
-    </table></div>
   </div>
 </section>
 
@@ -425,13 +382,15 @@
 <section class="panel" id="tab-approvals" role="tabpanel" aria-labelledby="tabbtn-approvals">
   <h2 class="pg">Approvals queue</h2>
   <p class="pg-sub">Two-step routing: a Manager reviews first, then a Director (or the CEO) gives final sign-off.
-     Buttons enable only for the role whose turn it is — switch "Viewing as" in the header to act each step.</p>
+     Add a note with either decision and it is sent to the employee who made the request. Buttons enable only
+     for the role whose turn it is — switch "Viewing as" in the header to act each step.</p>
   <div class="card">
     <div class="tbl"><table id="apprTable">
-      <thead><tr><th>Item</th><th>Type</th><th>Requested by</th><th>Stage</th><th>Decision</th></tr></thead>
+      <thead><tr><th>Item</th><th>Type</th><th>Requested by</th><th>Stage</th><th>Decision &amp; note to employee</th></tr></thead>
       <tbody></tbody>
     </table></div>
-    <p class="note">Every decision is time-stamped against the acting role in the audit log — dispute-grade traceability.</p>
+    <p class="note">Notes are delivered to the requesting employee and, like every decision, are time-stamped
+      against the acting role in the audit log — dispute-grade traceability.</p>
   </div>
 </section>
 
@@ -475,6 +434,49 @@
     <div class="h-sub">Newest first · records clock events, assignments, board moves, approvals, RACI edits and file changes</div>
     <div class="tbl"><table id="auditTable">
       <thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Detail</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ══════════════ TIME & ATTENDANCE ══════════════ -->
+<section class="panel" id="tab-time" role="tabpanel" aria-labelledby="tabbtn-time">
+  <h2 class="pg">Time &amp; attendance</h2>
+  <p class="pg-sub">Clock in and out below — your hours total up per day and roll into weekly, bi-weekly and monthly
+     views, with overtime, Sunday and public-holiday time valued at the correct South African rates automatically.</p>
+  <div class="two-col">
+    <div class="card clock-face">
+      <div class="status" id="clockStatus">Clocked out</div>
+      <div class="elapsed num" id="clockElapsed">00:00:00</div>
+      <div class="since" id="clockSince">Ready when you are</div>
+      <button class="btn big" id="clockBtn" type="button">Clock in</button>
+      <div class="sess">
+        <h3 style="font-size:13.5px;margin:4px 0 2px">Today's sessions</h3>
+        <div id="sessList"><div class="s-row"><span style="color:var(--ink-faint)">No sessions yet today</span></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Your timesheet — Demo Employee</h3>
+      <div class="h-sub" id="tsRange"></div>
+      <div class="sum-grid" id="sumGrid"></div>
+      <h3 style="margin-top:6px">Wage preview — current week</h3>
+      <div class="rate-line">
+        <label for="rateIn">Hourly rate</label>
+        <span>R</span><input id="rateIn" type="number" min="0" step="0.01" value="95.00" inputmode="decimal">
+        <span class="nmw ok" id="nmwCheck"></span>
+      </div>
+      <div id="wageRows"></div>
+      <p class="note">Overtime beyond ordinary hours is paid at 1.5×; Sunday work at 2× (1.5× if Sunday is a normal
+        shift day); public holidays at 2×. Records are kept tamper-evident for payroll queries and inspections.</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <h3>HR view — team hours this week</h3>
+    <div class="h-sub">What payroll sees: per-person ordinary and overtime hours with exceptions surfaced before pay run</div>
+    <div class="tbl"><table id="hrTable">
+      <thead><tr><th>Employee</th><th>Role</th><th class="num">Ordinary (h)</th><th class="num">Overtime (h)</th><th class="num">Sunday / PH (h)</th><th class="num">Week total</th><th>Status</th></tr></thead>
       <tbody></tbody>
     </table></div>
   </div>
@@ -1027,7 +1029,7 @@ function intakeStatus(i){
 }
 function renderIntake(){
   $('#intakeTable tbody').innerHTML=db.intake.map(function(i){
-    return '<tr><td><b>'+esc(i.title)+'</b>'+(i.desc?'<div style="font-size:12px;color:var(--ink-faint)">'+esc(i.desc)+'</div>':'')+'</td>'+
+    return '<tr><td><b>'+esc(i.title)+'</b>'+(i.desc?'<div style="font-size:12px;color:var(--ink-faint)">'+esc(i.desc)+'</div>':'')+notesHtml(i)+'</td>'+
       '<td>'+esc(i.type)+'</td><td>'+esc(i.req)+'</td><td><span class="chip '+(i.pri==='High'?'late':i.pri==='Medium'?'warn':'ok')+'">'+i.pri+'</span></td>'+
       '<td>'+intakeStatus(i)+'</td></tr>';
   }).join('')||'<tr><td colspan="5" style="color:var(--ink-faint)">No requests yet</td></tr>';
@@ -1040,15 +1042,25 @@ function canAct(i){
   if(i.stage===1)return r==='Manager'||r==='Director'||r==='CEO';
   return r==='Director'||r==='CEO';
 }
+function notesHtml(i){
+  return (i.notes||[]).map(function(n){
+    return '<div style="font-size:12px;color:var(--teal);margin-top:4px">✉ Note to '+esc(i.req)+' from '+esc(n.by)+
+      ' ('+esc(n.decision)+'): &ldquo;'+esc(n.text)+'&rdquo;</div>';
+  }).join('');
+}
 function renderApprovals(){
   var pending=db.intake.filter(function(i){return i.status==='pending';});
   var decided=db.intake.filter(function(i){return i.status!=='pending';});
   $('#apprTable tbody').innerHTML=pending.concat(decided).map(function(i){
     var act=canAct(i);
     var btns=i.status==='pending'?
+      '<div style="display:flex;flex-direction:column;gap:7px;min-width:230px">'+
+      '<input data-note="'+i.id+'" maxlength="240" placeholder="Note to '+esc(i.req)+' (optional)"'+(act?'':' disabled')+
+      ' style="font:12.5px var(--sans);padding:8px;border:1px solid var(--line);border-radius:6px;width:100%">'+
       '<div style="display:flex;gap:8px"><button class="btn" style="padding:7px 14px;font-size:13px" type="button" data-appr="ok" data-id="'+i.id+'"'+(act?'':' disabled title="Switch to the acting role to decide"')+'>Approve</button>'+
-      '<button class="btn out" style="padding:7px 14px;font-size:13px" type="button" data-appr="no" data-id="'+i.id+'"'+(act?'':' disabled')+'>Reject</button></div>':
-      intakeStatus(i);
+      '<button class="btn out" style="padding:7px 14px;font-size:13px" type="button" data-appr="no" data-id="'+i.id+'"'+(act?'':' disabled')+'>Reject</button></div>'+
+      notesHtml(i)+'</div>':
+      intakeStatus(i)+notesHtml(i);
     return '<tr><td><b>'+esc(i.title)+'</b></td><td>'+esc(i.type)+'</td><td>'+esc(i.req)+'</td>'+
       '<td>'+(i.status==='pending'?(i.stage===1?'1 · Manager review':'2 · Director sign-off'):'Complete')+'</td><td>'+btns+'</td></tr>';
   }).join('')||'<tr><td colspan="5" style="color:var(--ink-faint)">Queue is empty</td></tr>';
@@ -1056,9 +1068,24 @@ function renderApprovals(){
 $('#apprTable').addEventListener('click',function(e){
   var b=e.target.closest('button[data-appr]');if(!b||b.disabled)return;
   var i=db.intake.find(function(x){return x.id===b.getAttribute('data-id');});if(!i)return;
-  if(b.getAttribute('data-appr')==='no'){i.status='rejected';audit(role(),'Request rejected','"'+i.title+'" at stage '+i.stage);toast('Request rejected');}
-  else if(i.stage===1){i.stage=2;audit(role(),'Stage 1 approved','"'+i.title+'" → Director sign-off');toast('Approved — now awaiting Director sign-off');}
-  else{i.status='approved';audit(role(),'Request approved','"'+i.title+'" fully approved');toast('Request fully approved');}
+  var noteEl=document.querySelector('[data-note="'+i.id+'"]');
+  var note=noteEl?noteEl.value.trim():'';
+  function sendNote(decision){
+    if(!note)return '';
+    (i.notes=i.notes||[]).push({by:role(),decision:decision,text:note});
+    audit(role(),'Note sent to '+i.req,'On "'+i.title+'" ('+decision+'): "'+note+'"');
+    return ' — note sent to '+i.req;
+  }
+  if(b.getAttribute('data-appr')==='no'){
+    i.status='rejected';var s=sendNote('rejected');
+    audit(role(),'Request rejected','"'+i.title+'" at stage '+i.stage);toast('Request rejected'+s);
+  }else if(i.stage===1){
+    i.stage=2;var s1=sendNote('stage-1 approval');
+    audit(role(),'Stage 1 approved','"'+i.title+'" → Director sign-off');toast('Approved — awaiting Director sign-off'+s1);
+  }else{
+    i.status='approved';var s2=sendNote('approved');
+    audit(role(),'Request approved','"'+i.title+'" fully approved');toast('Request fully approved'+s2);
+  }
   save();renderApprovals();renderIntake();renderBoard();
 });
 
