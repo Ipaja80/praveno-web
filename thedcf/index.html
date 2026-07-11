@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0E2A47">
-<meta name="description" content="Praveno workforce and project management demo prepared for Thedcf — time and attendance, delivery dashboard, workflow board, RACI, approvals, project Gantt, mobile apps.">
+<meta name="description" content="Praveno workforce and project management demo prepared for Thedcf — time and attendance, delivery dashboard, tiger team leaderboard with war-room chat, workflow board, RACI, approvals, project Gantt, mobile apps.">
 </head>
 <body>
 <title>Praveno — Workforce &amp; Projects Demo for Thedcf</title>
@@ -201,6 +201,29 @@
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   @media(prefers-reduced-motion:reduce){#toast{transition:none}}
 
+  /* tiger team leaderboard */
+  .rankb{display:inline-grid;place-items:center;width:27px;height:27px;border-radius:50%;
+    font:700 12.5px var(--sans);color:#fff;background:#9AA8B5;font-variant-numeric:tabular-nums}
+  .rankb.r1{background:var(--gold)} .rankb.r2{background:#8C9BAA} .rankb.r3{background:#B07A50}
+  .alertfeed{border:1px solid var(--line);border-radius:8px;background:#F7F9FC;padding:10px 14px;
+    font-size:12.5px;max-height:180px;overflow-y:auto}
+  .alertfeed .a-row{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px solid #E9EEF3}
+  .alertfeed .a-row:last-child{border-bottom:0}
+  .alertfeed .a-ok{color:var(--ok);font-weight:600;white-space:nowrap}
+  .tt-badge{display:inline-block;font:600 11px/1 var(--sans);background:#F3E6CF;color:#8A6512;
+    border-radius:999px;padding:5px 10px;letter-spacing:.05em;text-transform:uppercase}
+  /* war-room chat */
+  .chatbox{border:1px solid var(--line);border-radius:8px;background:#F7F9FC;height:260px;overflow-y:auto;
+    padding:12px;display:flex;flex-direction:column;gap:8px}
+  .msg{max-width:78%;padding:8px 12px;border-radius:12px;font-size:13px;line-height:1.45}
+  .msg .who{font:600 10.5px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px;color:var(--ink-faint)}
+  .msg .tm{font-size:10px;color:var(--ink-faint);margin-top:3px;text-align:right}
+  .msg.theirs{background:#fff;border:1px solid var(--line);align-self:flex-start;border-bottom-left-radius:3px}
+  .msg.mine{background:var(--navy);color:#fff;align-self:flex-end;border-bottom-right-radius:3px}
+  .msg.mine .who,.msg.mine .tm{color:#9FB3C8}
+  .chat-send{display:flex;gap:8px;margin-top:10px}
+  .chat-send input{flex:1;font:13.5px var(--sans);padding:10px;border:1px solid var(--line);border-radius:7px}
+
   .install{max-width:760px;margin:22px auto 0}
   .install ol{margin:8px 0 0 20px;font-size:13.5px}
   .install li{margin-bottom:5px}
@@ -223,6 +246,7 @@
     <button role="tab" aria-selected="true" aria-controls="tab-dash" id="tabbtn-dash">Dashboard</button>
     <button role="tab" aria-selected="false" aria-controls="tab-board" id="tabbtn-board">Workflow Board</button>
     <button role="tab" aria-selected="false" aria-controls="tab-assign" id="tabbtn-assign">Assign Tasks</button>
+    <button role="tab" aria-selected="false" aria-controls="tab-tiger" id="tabbtn-tiger">Team Leaderboard</button>
     <button role="tab" aria-selected="false" aria-controls="tab-plan" id="tabbtn-plan">Project Plan · Gantt</button>
     <button role="tab" aria-selected="false" aria-controls="tab-raci" id="tabbtn-raci">Team RACI</button>
     <button role="tab" aria-selected="false" aria-controls="tab-intake" id="tabbtn-intake">Intake</button>
@@ -337,6 +361,73 @@
     <div class="h-sub">Approved and rejected task counts per team member — updates live as leadership decides</div>
     <div class="tbl"><table id="resTable">
       <thead><tr><th>Resource</th><th class="num">Tasks assigned</th><th class="num">Approved</th><th class="num">Rejected</th><th class="num">Pending</th><th>Standing</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ══════════════ TIGER TEAMS · LEADERBOARD ══════════════ -->
+<section class="panel" id="tab-tiger" role="tabpanel" aria-labelledby="tabbtn-tiger">
+  <h2 class="pg">Collaborative team leaderboard</h2>
+  <p class="pg-sub">When a high-priority task needs more than one pair of hands, leadership mobilises a
+     <b>tiger team</b> — a named squad that swarms the task until it's knocked out. Every member is alerted the
+     moment the team is launched, progress feeds the delivery dashboard and executive summary, and contribution
+     points keep the leaderboard honest.</p>
+
+  <div class="two-col">
+    <div class="card">
+      <h3>Launch a tiger team</h3>
+      <div class="h-sub">CEO, Director and Manager roles can mobilise a team — members are alerted instantly</div>
+      <div class="gate" id="ttGate" hidden>You are viewing as <b>Employee</b>. Only CEO, Director and Manager
+        roles can launch a tiger team — switch roles in the header to try it.</div>
+      <form id="ttForm">
+        <div class="form-grid">
+          <div class="f"><label for="ttTeam">Select team</label><select id="ttTeam"></select></div>
+          <div class="f"><label for="ttTask">High-priority task</label><select id="ttTask"></select></div>
+        </div>
+        <div class="f" id="ttCustomWrap" style="margin-bottom:14px" hidden>
+          <label for="ttCustom">Custom task title</label>
+          <input id="ttCustom" maxlength="80" placeholder="e.g. Recover the client pitch by Friday">
+        </div>
+        <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px" id="ttMembers"></div>
+        <button class="btn" type="submit">Launch tiger team &amp; alert members</button>
+      </form>
+      <div style="margin-top:16px">
+        <h3 style="font-size:13.5px;margin-bottom:6px">Member alerts sent</h3>
+        <div class="alertfeed" id="ttAlerts"><div class="a-row"><span style="color:var(--ink-faint)">No alerts yet — launch a team above</span></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Contribution leaderboard</h3>
+      <div class="h-sub">Points for approved work, tiger-team mobilisations (+10), progress logged (+15) and knock-outs (+50)</div>
+      <div class="tbl"><table id="ttBoard">
+        <thead><tr><th></th><th>Team member</th><th class="num">Points</th><th class="num">Tiger teams</th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <h3>War-room chat</h3>
+    <div class="h-sub">Leadership and the selected team members coordinate the break-away task here — one room per tiger team,
+      every message on the record</div>
+    <div class="form-grid" style="margin-bottom:10px">
+      <div class="f"><label for="chatTeam">Tiger team room</label><select id="chatTeam"></select></div>
+      <div class="f"><label>&nbsp;</label><div style="font-size:12.5px;color:var(--ink-soft);padding-top:9px" id="chatWho"></div></div>
+    </div>
+    <div class="chatbox" id="chatMsgs"></div>
+    <form class="chat-send" id="chatForm">
+      <input id="chatText" maxlength="280" placeholder="Message the team…" autocomplete="off">
+      <button class="btn" type="submit">Send</button>
+    </form>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <h3>Active &amp; recent tiger teams</h3>
+    <div class="h-sub">Log progress as the squad works; at 100% the task is knocked out and the team earns its bonus</div>
+    <div class="tbl"><table id="ttTable">
+      <thead><tr><th>Task</th><th>Team</th><th>Members</th><th>Progress</th><th>Status</th><th></th></tr></thead>
       <tbody></tbody>
     </table></div>
   </div>
@@ -688,6 +779,7 @@ document.getElementById('genExec').addEventListener('click',function(){
       'critical path. Media booking is close behind and not the constraint.</p>'+
       '<h4>Successes</h4><p>Client approval for Ubuntu Bank was secured on schedule in week 4 with concepts accepted first-pass. '+
       'Asset tagging is at '+byId.T13.pct+'% — team training can likely pull forward a week.</p>'+
+      (window.OPS&&window.OPS.tigerExecHtml?window.OPS.tigerExecHtml():'')+
       '<div class="stamp">Generated by the reporting service from week-'+TODAY_WEEK+' snapshot data · refresh any time</div>';
   },reduced?150:1400);
 });
@@ -898,7 +990,8 @@ render();
   }
   me();setInterval(me,5000);
 })();
-window.DEMO={weekHours:function(){var now=new Date(),ws=weekStart(now);return classifyRange(ws,now).total;}};
+window.DEMO={weekHours:function(){var now=new Date(),ws=weekStart(now);return classifyRange(ws,now).total;},
+  openTasks:function(){return TASKS.filter(function(t){return t.pct<100&&!t.ms;}).map(function(t){return t.name;});}};
 })();
 </script>
 <script>
@@ -913,13 +1006,32 @@ var RROWS=['Campaign strategy','Creative concepts','Asset production','Media pla
 var RCOLS=['CEO','Director','Project Lead','Designer','Developer','Copywriter','HR'];
 var RSEED=[['I','A','R','','','',''],['','C','A','R','','C',''],['','I','A','R','','C',''],['','A','R','','','',''],['','I','A','C','R','',''],['','A','C','','R','',''],['I','A','','','','','R']];
 var KEY='praveno_thedcf_ops_v1';
+var TEAMS=[
+ {name:'Creative Strike Team',members:['Sipho Dlamini','Lerato Mokoena','Thandi Nkosi']},
+ {name:'Digital Build Squad',members:['Kagiso Molefe','Johan van der Merwe','Ayesha Patel']},
+ {name:'Launch Command',members:['Ayesha Patel','Thandi Nkosi','Johan van der Merwe','Naledi Khumalo']},
+ {name:'Full Bench (all hands)',members:EMP.slice(0,7)}
+];
+var PTS_SEED={'Ayesha Patel':465,'Sipho Dlamini':410,'Thandi Nkosi':340,'Johan van der Merwe':305,'Lerato Mokoena':290,'Kagiso Molefe':255,'Naledi Khumalo':180,'Demo Employee':120};
 var db=null;
 try{db=JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){}
 if(db&&db.v===1){ // migrate: add decision state to existing assignments
   db.v=2;(db.assigned||[]).forEach(function(a){a.appr=a.col==='Approved'||a.col==='Done'?'approved':'pending';});
 }
-if(!db||db.v!==2){
-  db={v:2,seq:100,
+if(db&&db.v===2){ // migrate: add tiger teams + leaderboard points
+  db.v=3;db.tiger=[];db.points=JSON.parse(JSON.stringify(PTS_SEED));
+}
+if(!db||db.v!==3){
+  db={v:3,seq:100,
+    tiger:[{id:'G1',task:'Karoo build recovery sprint',team:'Digital Build Squad',
+      members:TEAMS[1].members.slice(),started:'Earlier this week',progress:50,status:'Active',
+      chat:[
+        {who:'Director',mine:true,text:'Team — the Karoo build is our break-away priority this week. What do you need to hit 100% by Friday?',t:'09:12'},
+        {who:'Kagiso Molefe',mine:false,text:'CMS templates are the blocker. If Johan can take the content mapping I can finish the build layer by Thursday.',t:'09:15'},
+        {who:'Johan van der Merwe',mine:false,text:'On it — content mapping starts this afternoon.',t:'09:18'},
+        {who:'Ayesha Patel',mine:false,text:'I’ll clear your other reviews so nothing competes with this. Daily check-in at 08:30.',t:'09:21'}
+      ]}],
+    points:JSON.parse(JSON.stringify(PTS_SEED)),
     assigned:[
       {id:'A1',title:'Refresh media budget tracker',proj:PROJECTS[0],to:'Johan van der Merwe',by:'Director',due:8,pri:'High',col:'Approved',appr:'approved'},
       {id:'A2',title:'Shot list for launch film',proj:PROJECTS[0],to:'Sipho Dlamini',by:'Manager',due:7,pri:'Medium',col:'Review',appr:'pending'},
@@ -948,7 +1060,7 @@ $('#afDue').innerHTML=Array.from({length:12},function(_,i){return '<option'+(i==
 
 /* ── assign ── */
 function gateAssign(){var emp=role()==='Employee';$('#assignGate').hidden=!emp;$('#assignForm').style.display=emp?'none':'';}
-$('#roleSel').addEventListener('change',function(){gateAssign();renderApprovals();renderAssign();});
+$('#roleSel').addEventListener('change',function(){gateAssign();renderApprovals();renderAssign();gateTiger();});
 $('#assignForm').addEventListener('submit',function(e){
   e.preventDefault();
   var a={id:'A'+(db.seq++),title:$('#afTitle').value.trim(),proj:$('#afProj').value,to:$('#afTo').value,
@@ -1182,6 +1294,152 @@ $('#filesTable').addEventListener('click',function(e){
   if(ix>=0){audit(role(),'File removed',db.files[ix].name);db.files.splice(ix,1);save();renderFiles();}
 });
 
+/* ── tiger teams & leaderboard ── */
+function fillTiger(){
+  $('#ttTeam').innerHTML=TEAMS.map(function(t,i){return '<option value="'+i+'">'+esc(t.name)+' ('+t.members.length+')</option>';}).join('');
+  var open=(window.DEMO&&window.DEMO.openTasks?window.DEMO.openTasks():[])
+    .concat(db.assigned.filter(function(a){return a.appr!=='approved';}).map(function(a){return a.title;}));
+  $('#ttTask').innerHTML=open.map(function(t){return '<option>'+esc(t)+'</option>';}).join('')+'<option value="__custom">Custom task…</option>';
+  showMembers();
+}
+function showMembers(){
+  var t=TEAMS[+$('#ttTeam').value||0];
+  $('#ttMembers').innerHTML='<b>Will be alerted:</b> '+t.members.map(esc).join(' · ');
+}
+$('#ttTeam').addEventListener('change',showMembers);
+$('#ttTask').addEventListener('change',function(){$('#ttCustomWrap').hidden=this.value!=='__custom';});
+function gateTiger(){var emp=role()==='Employee';$('#ttGate').hidden=!emp;$('#ttForm').style.display=emp?'none':'';}
+$('#ttForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  var team=TEAMS[+$('#ttTeam').value||0];
+  var task=$('#ttTask').value==='__custom'?$('#ttCustom').value.trim():$('#ttTask').value;
+  if(!task)return;
+  var t={id:'G'+(db.seq++),task:task,team:team.name,members:team.members.slice(),
+         started:new Date().toLocaleString('en-ZA'),progress:0,status:'Active'};
+  db.tiger.unshift(t);
+  team.members.forEach(function(m){db.points[m]=(db.points[m]||0)+10;});
+  save();
+  audit(role(),'Tiger team launched',team.name+' → "'+task+'" ('+team.members.length+' members alerted)');
+  audit('System','Alerts sent','Push + email to: '+team.members.join(', '));
+  $('#ttCustom').value='';
+  renderTiger();renderChatRooms();
+  toast('Tiger team launched — '+team.members.length+' members alerted');
+});
+function renderTiger(){
+  /* alert feed: newest launches first */
+  var feed=[];
+  db.tiger.slice(0,4).forEach(function(t){
+    t.members.forEach(function(m){feed.push({m:m,t:t});});
+  });
+  $('#ttAlerts').innerHTML=feed.length?feed.slice(0,14).map(function(f){
+    return '<div class="a-row"><span>✉ '+esc(f.m)+' — mobilised for “'+esc(f.t.task)+'”</span><span class="a-ok">Alerted</span></div>';
+  }).join(''):'<div class="a-row"><span style="color:var(--ink-faint)">No alerts yet — launch a team above</span></div>';
+  /* active/recent table */
+  $('#ttTable tbody').innerHTML=db.tiger.map(function(t){
+    var barCol=t.status==='Knocked out'?'var(--ok)':t.progress>=50?'var(--teal)':'var(--warn)';
+    var actions=t.status==='Active'?
+      '<button class="btn ghost" style="padding:6px 12px;font-size:12.5px" type="button" data-ttp="'+t.id+'">Log +25% progress</button>':'';
+    return '<tr><td><b>'+esc(t.task)+'</b><div style="font-size:11.5px;color:var(--ink-faint)">since '+esc(t.started)+'</div></td>'+
+      '<td><span class="tt-badge">'+esc(t.team)+'</span></td>'+
+      '<td style="font-size:12.5px">'+t.members.map(esc).join('<br>')+'</td>'+
+      '<td><div class="bar-track"><div class="bar-fill" style="width:'+t.progress+'%;background:'+barCol+'"></div></div>'+
+      '<span style="font-size:11.5px;color:var(--ink-faint)" class="num">'+t.progress+'%</span></td>'+
+      '<td>'+(t.status==='Knocked out'?'<span class="chip ok">Knocked out</span>':'<span class="chip warn">Active</span>')+'</td>'+
+      '<td>'+actions+'</td></tr>';
+  }).join('')||'<tr><td colspan="6" style="color:var(--ink-faint)">No tiger teams yet</td></tr>';
+  /* leaderboard */
+  var counts={};db.tiger.forEach(function(t){t.members.forEach(function(m){counts[m]=(counts[m]||0)+1;});});
+  var rows=Object.keys(db.points).map(function(m){return {m:m,p:db.points[m],c:counts[m]||0};})
+    .sort(function(a,b){return b.p-a.p;});
+  $('#ttBoard tbody').innerHTML=rows.map(function(r,i){
+    return '<tr><td><span class="rankb '+(i===0?'r1':i===1?'r2':i===2?'r3':'')+'">'+(i+1)+'</span></td>'+
+      '<td><b>'+esc(r.m)+'</b></td><td class="num" style="font-weight:600">'+r.p.toLocaleString('en-ZA')+'</td>'+
+      '<td class="num">'+r.c+'</td></tr>';
+  }).join('');
+  /* dashboard KPI */
+  var active=db.tiger.filter(function(t){return t.status==='Active';});
+  var el=$('#kpiTiger');
+  if(!el){el=document.createElement('div');el.id='kpiTiger';el.className='card kpi';$('#kpiRow').appendChild(el);}
+  el.className='card kpi '+(active.length?'warn':'');
+  var lastChat='';
+  if(active.length&&active[0].chat&&active[0].chat.length){
+    var lm=active[0].chat[active[0].chat.length-1];
+    lastChat='<div class="sub" style="margin-top:2px">War room · '+esc(lm.who)+': “'+esc(lm.text.length>44?lm.text.slice(0,44)+'…':lm.text)+'”</div>';
+  }
+  el.innerHTML='<div class="lbl">Tiger teams active</div><div class="val num">'+active.length+'</div>'+
+    '<div class="sub">'+(active.length?esc(active[0].team)+' on “'+esc(active[0].task)+'”':'no high-priority swarms running')+'</div>'+lastChat;
+}
+/* ── war-room chat ── */
+function currentRoom(){
+  var id=$('#chatTeam').value;
+  return db.tiger.find(function(t){return t.id===id;})||db.tiger[0];
+}
+function renderChatRooms(){
+  $('#chatTeam').innerHTML=db.tiger.map(function(t){
+    return '<option value="'+t.id+'">'+esc(t.team)+' — '+esc(t.task)+(t.status==='Active'?'':' (closed)')+'</option>';
+  }).join('')||'<option>No tiger teams yet</option>';
+  renderChat();
+}
+function hhmm(){var d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function renderChat(){
+  var t=currentRoom(),box=$('#chatMsgs');
+  if(!t){box.innerHTML='<div style="color:var(--ink-faint);font-size:13px">Launch a tiger team to open its war room.</div>';$('#chatWho').textContent='';return;}
+  t.chat=t.chat||[];
+  $('#chatWho').innerHTML='<b>In this room:</b> leadership + '+t.members.map(esc).join(' · ');
+  box.innerHTML=t.chat.map(function(m){
+    return '<div class="msg '+(m.mine?'mine':'theirs')+'"><div class="who">'+esc(m.who)+'</div>'+esc(m.text)+
+      '<div class="tm">'+esc(m.t)+'</div></div>';
+  }).join('')||'<div style="color:var(--ink-faint);font-size:13px">No messages yet — open the conversation below.</div>';
+  box.scrollTop=box.scrollHeight;
+}
+$('#chatTeam').addEventListener('change',renderChat);
+var CANNED=['On it — update within the hour.','Copy that. Re-prioritising now.','Good timing, was about to flag the same thing.','Will have progress logged before end of day.','Acknowledged — pulling in what I need from the shared files.'];
+$('#chatForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  var t=currentRoom(),txt=$('#chatText').value.trim();
+  if(!t||!txt)return;
+  t.chat=t.chat||[];
+  t.chat.push({who:'You ('+role()+')',mine:true,text:txt,t:hhmm()});
+  $('#chatText').value='';
+  save();renderChat();renderTiger();
+  audit(role(),'War-room message','To '+t.team+' re "'+t.task+'": "'+(txt.length>60?txt.slice(0,60)+'…':txt)+'"');
+  if(t.status==='Active'){
+    var m=t.members[(t.chat.length)%t.members.length];
+    setTimeout(function(){
+      t.chat.push({who:m,mine:false,text:CANNED[t.chat.length%CANNED.length],t:hhmm()});
+      save();renderChat();renderTiger();
+    },1400);
+  }
+});
+$('#ttTable').addEventListener('click',function(e){
+  var b=e.target.closest('button[data-ttp]');if(!b)return;
+  var t=db.tiger.find(function(x){return x.id===b.getAttribute('data-ttp');});if(!t||t.status!=='Active')return;
+  t.progress=Math.min(100,t.progress+25);
+  t.members.forEach(function(m){db.points[m]=(db.points[m]||0)+15;});
+  if(t.progress>=100){
+    t.status='Knocked out';
+    t.members.forEach(function(m){db.points[m]=(db.points[m]||0)+50;});
+    audit(role(),'Tiger team knocked out task','"'+t.task+'" completed by '+t.team+' — +50 bonus points each');
+    toast('Task knocked out — '+t.team+' earns the bonus');
+  }else{
+    audit(role(),'Tiger team progress','"'+t.task+'" at '+t.progress+'% ('+t.team+')');
+    toast('Progress logged — '+t.progress+'%');
+  }
+  save();renderTiger();renderReports();
+});
+window.OPS={tigerExecHtml:function(){
+  var active=db.tiger.filter(function(t){return t.status==='Active';});
+  var done=db.tiger.filter(function(t){return t.status==='Knocked out';});
+  var top=Object.keys(db.points).sort(function(a,b){return db.points[b]-db.points[a];})[0];
+  var s='<h4>Tiger teams</h4><p>';
+  if(active.length){
+    s+=active.map(function(t){return '<b>'+esc(t.team)+'</b> ('+t.members.length+' members) is swarming “'+esc(t.task)+'”, currently at '+t.progress+'%';}).join('; ')+'. ';
+  }else{s+='No high-priority tiger teams are currently active. ';}
+  if(done.length){s+=done.length+' task'+(done.length>1?'s':'')+' knocked out by tiger teams to date. ';}
+  s+='Top contributor on the leaderboard: <b>'+esc(top)+'</b>.</p>';
+  return s;
+}};
+
 /* ── reports & audit ── */
 function renderReports(){
   var counts={};COLS.forEach(function(c){counts[c]=0;});
@@ -1222,6 +1480,7 @@ $('#expAudit').addEventListener('click',function(){
 
 /* init */
 gateAssign();renderAssign();renderBoard();renderRaci();renderIntake();renderApprovals();renderFiles();renderReports();renderAudit();
+fillTiger();gateTiger();renderTiger();renderChatRooms();
 })();
 </script>
 
